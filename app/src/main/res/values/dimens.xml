@@ -2,4 +2,5 @@
 <resources>
     <dimen name="cardRadius">8dp</dimen>
     <dimen name="cardElevation">4dp</dimen>
+    <dimen name="spaceM">16dp</dimen>
 </resources>

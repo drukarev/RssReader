@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.rssreader.model.FeedCardModel
 import com.example.rssreader.view.FeedAdapter
+import com.example.rssreader.view.FeedItemDecoration
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -26,6 +27,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setUpFeed() {
         adapter = FeedAdapter()
+        feed.addItemDecoration(FeedItemDecoration(resources.getDimensionPixelOffset(R.dimen.spaceM)))
         feed.adapter = adapter
     }
 }

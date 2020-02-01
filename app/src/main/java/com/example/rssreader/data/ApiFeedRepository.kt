@@ -1,107 +1,34 @@
 package com.example.rssreader.data
 
-import android.util.Log
-import android.util.Xml
 import com.example.rssreader.model.FeedItem
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.request.get
-import org.xmlpull.v1.XmlPullParser
-import org.xmlpull.v1.XmlPullParserException
-import java.io.IOException
-import java.io.InputStream
+import kotlinx.coroutines.*
+import java.util.concurrent.ConcurrentLinkedQueue
 
 class ApiFeedRepository() {
 
+    private val feeds = listOf(
+        "https://blog.jetbrains.com/feed/",
+        "https://www.objc.io/feed.xml",
+        "https://bitbucket.org/blog/feed",
+        "https://www.blog.google/products/android/rss"
+//        "https://github.blog/engineering.atom",
+//        "https://about.gitlab.com/atom.xml",
+    )
+
     suspend fun getFeedItems(): List<FeedItem> {
         val client = HttpClient(Android)
-        val response = client.get<InputStream>("https://www.objc.io/feed.xml")
 
-        Log.e("Request", "Await")
-
-        val items = mutableListOf<FeedItem>()
-        val parser: XmlPullParser = Xml.newPullParser()
-        parser.setInput(response, null)
-        parser.nextTag()
-
-        parser.require(XmlPullParser.START_TAG, null, "rss") //TODO add atom feed
-        parser.nextTag()
-        parser.require(XmlPullParser.START_TAG, null, "channel") //TODO atom feed
-
-        var sourceFeedName: String? = null
-
-        while (parser.next() != XmlPullParser.END_TAG) {
-            if (parser.eventType != XmlPullParser.START_TAG) {
-                continue
-            }
-
-            if (parser.name == "title") {
-                sourceFeedName = readText(parser)
+        val data = ConcurrentLinkedQueue<FeedItem>()
+        runBlocking {
+            feeds.forEach {
+                launch(Dispatchers.IO) {
+                    data.addAll(parse(client.get(it)))
+                }
             }
         }
-
-        checkNotNull(sourceFeedName)
-
-        while (parser.next() != XmlPullParser.END_TAG) {
-            if (parser.eventType != XmlPullParser.START_TAG) {
-                continue
-            }
-
-            if (parser.name == "item") {
-                items.add(readItem(parser, sourceFeedName))
-            } else {
-                skip(parser)
-            }
-        }
-
-        return items
+        return data.toList()
     }
 }
-
-fun readItem(parser: XmlPullParser, sourceFeedName: String): FeedItem {
-    var title: String? = null //TODO: check description if title is empty
-    var author: String? = null ////TODO: check dc:creator and author
-    var date: String? = null
-
-    while (parser.next() != XmlPullParser.END_TAG) {
-        if (parser.eventType != XmlPullParser.START_TAG) {
-            continue
-        }
-        when (parser.name) {
-            "title" -> title = readText(parser)
-            "author" -> author = readText(parser)
-            "pubDate" -> date = readText(parser)
-            else -> skip(parser)
-        }
-    }
-
-    return FeedItem(
-        title = title,
-        author = author,
-        date = date,
-        sourceFeedName = sourceFeedName
-    )
-}
-
-@Throws(IOException::class, XmlPullParserException::class)
-private fun readText(parser: XmlPullParser): String {
-    var result = ""
-    if (parser.next() == XmlPullParser.TEXT) {
-        result = parser.text
-        parser.nextTag()
-    }
-    return result
-}
-
-@Throws(XmlPullParserException::class, IOException::class)
-private fun skip(parser: XmlPullParser) {
-    check(parser.eventType == XmlPullParser.START_TAG)
-    var depth = 1
-    while (depth != 0) {
-        when (parser.next()) {
-            XmlPullParser.END_TAG -> depth--
-            XmlPullParser.START_TAG -> depth++
-        }
-    }
-}
-

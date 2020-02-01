@@ -1,6 +1,6 @@
 package com.example.rssreader.model
 
-data class FeedCardModel(
+data class FeedCardViewModel(
     val id: Int,
     val title: CharSequence,
     val author: CharSequence,

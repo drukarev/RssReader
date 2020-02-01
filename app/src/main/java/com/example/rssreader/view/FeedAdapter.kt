@@ -5,10 +5,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncDifferConfig
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.rssreader.model.FeedCardModel
+import com.example.rssreader.model.FeedCardViewModel
 import kotlinx.android.synthetic.main.item_feed_card.view.*
 
-class FeedAdapter : ListAdapter<FeedCardModel, RecyclerView.ViewHolder>(
+class FeedAdapter : ListAdapter<FeedCardViewModel, RecyclerView.ViewHolder>(
     AsyncDifferConfig.Builder(FeedCardDiffCallback()).build()
 ) {
 

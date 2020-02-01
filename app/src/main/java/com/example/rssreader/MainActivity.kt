@@ -2,14 +2,19 @@ package com.example.rssreader
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.example.rssreader.model.FeedCardModel
+import android.util.Log
+import com.example.rssreader.data.ApiFeedRepository
+import com.example.rssreader.model.FeedCardViewModel
 import com.example.rssreader.view.FeedAdapter
 import com.example.rssreader.view.FeedItemDecoration
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var adapter: FeedAdapter
+    private lateinit var adapter: FeedAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,10 +24,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        val mockList = List(100) { id ->
-            FeedCardModel(id, "Test title $id", "Author $id", "Date $id", "SourceFeedName $id")
+        val repository = ApiFeedRepository()
+        GlobalScope.launch(Dispatchers.Main) {
+            val items = repository.getFeedItems().mapIndexed { id, item ->
+                FeedCardViewModel(
+                    id = id,
+                    title = item.title ?: "No title",
+                    author = item.author ?: "No author",
+                    date = item.date ?: "No date",
+                    sourceFeedName = item.sourceFeedName ?: "SourceFeedName"
+                )
+            }
+            Log.e("Items",items.toString())
+            adapter.submitList(items)
         }
-        adapter.submitList(mockList)
     }
 
     private fun setUpFeed() {

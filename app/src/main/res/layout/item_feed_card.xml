@@ -8,10 +8,10 @@
 
     <TextView
         style="@style/Text.Info"
-        android:id="@+id/date"
+        android:id="@+id/sourceFeedName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="27 Jan 2020 14:04:42" />
+        tools:text="Blog name" />
 
     <TextView
         style="@style/Text.Title"
@@ -27,17 +27,18 @@
 
         <TextView
             style="@style/Text.Subtitle"
-            android:id="@+id/sourceFeedName"
-            android:layout_width="0dp"
+            android:id="@+id/date"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            tools:text="Blog name" />
+            tools:text="27 Jan 14:04:42" />
 
         <TextView
             style="@style/Text.Subtitle"
             android:id="@+id/author"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
             tools:text="Author Name" />
     </LinearLayout>
 </LinearLayout>

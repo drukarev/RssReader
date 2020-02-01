@@ -22,7 +22,8 @@ fun parse(inputStream: InputStream): List<FeedItem> {
 @Throws(IOException::class, XmlPullParserException::class)
 fun XmlPullParser.readText(): String {
     var result = ""
-    if (next() == XmlPullParser.TEXT) {
+    val event = next()
+    if (event == XmlPullParser.TEXT || event == XmlPullParser.CDSECT) {
         result = text
         nextTag()
     }

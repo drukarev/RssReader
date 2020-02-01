@@ -46,9 +46,10 @@ fun XmlPullParser.readRssItem(sourceFeedName: String): FeedItem {
         if (eventType != XmlPullParser.START_TAG) {
             continue
         }
+
         when (name) {
             "title" -> title = readText()
-            "author" -> author = readText()
+            "creator" -> author = readText()
             "pubDate" -> date = readText()
             else -> skip()
         }

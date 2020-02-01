@@ -42,6 +42,7 @@ fun XmlPullParser.parseAtom(): List<FeedItem> {
 }
 
 fun XmlPullParser.readAtomItem(sourceFeedName: String): FeedItem {
+    var id: String = "" //TODO: throw exception if empty
     var title: String? = null
     var author: String? = null
     var date: String? = null
@@ -51,6 +52,7 @@ fun XmlPullParser.readAtomItem(sourceFeedName: String): FeedItem {
             continue
         }
         when (name) {
+            "id" -> id = readText()
             "title" -> title = readText()
             "author" -> author = readAtomAuthor()
             "published" -> date = readText()
@@ -59,6 +61,7 @@ fun XmlPullParser.readAtomItem(sourceFeedName: String): FeedItem {
     }
 
     return FeedItem(
+        uid = id,
         title = title,
         author = author,
         date = date,

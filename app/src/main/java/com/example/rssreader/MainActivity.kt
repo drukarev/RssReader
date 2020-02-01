@@ -26,16 +26,17 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         val repository = ApiFeedRepository()
         GlobalScope.launch(Dispatchers.Main) {
-            val items = repository.getFeedItems().mapIndexed { id, item ->
-                FeedCardViewModel(
-                    id = id,
-                    title = item.title ?: "No title",
-                    author = item.author ?: "No author",
-                    date = item.date ?: "No date",
-                    sourceFeedName = item.sourceFeedName ?: "SourceFeedName"
-                )
-            }
-            Log.e("Items",items.toString())
+            val items = repository.getFeedItems(this@MainActivity.applicationContext)
+                .mapIndexed { id, item ->
+                    FeedCardViewModel(
+                        id = id,
+                        title = item.title ?: "No title",
+                        author = item.author ?: "No author",
+                        date = item.date ?: "No date",
+                        sourceFeedName = item.sourceFeedName ?: "SourceFeedName"
+                    )
+                }
+            Log.e("Items", items.toString())
             adapter.submitList(items)
         }
     }

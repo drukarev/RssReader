@@ -1,11 +1,18 @@
 package com.example.rssreader.data
 
+import android.content.Context
+import android.util.Log
+import androidx.room.Room
+import com.example.rssreader.model.AppDatabase
 import com.example.rssreader.model.FeedItem
 import com.example.rssreader.parser.parse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.request.get
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class ApiFeedRepository {
@@ -19,17 +26,30 @@ class ApiFeedRepository {
         "https://about.gitlab.com/atom.xml"
     )
 
-    suspend fun getFeedItems(): List<FeedItem> {
-        val client = HttpClient(Android)
+    suspend fun getFeedItems(applicationContext: Context): List<FeedItem> {
+        return withContext(Dispatchers.IO) {
+            val client = HttpClient(Android)
 
-        val data = ConcurrentLinkedQueue<FeedItem>()
-        runBlocking {
-            feeds.forEach {
-                launch(Dispatchers.IO) {
-                    data.addAll(parse(client.get(it)))
+            val data = ConcurrentLinkedQueue<FeedItem>()
+            runBlocking {
+                feeds.forEach {
+                    launch {
+                        data.addAll(parse(client.get(it)))
+                    }
                 }
             }
+
+            //TODO: db should be initialized only once
+            val db = Room.databaseBuilder(
+                applicationContext,
+                AppDatabase::class.java, "feeds"
+            ).build()
+
+            db.feedDao().insertAll(data.toList())
+
+            val newItems = db.feedDao().getAll()
+            Log.e("Items from DB", newItems.toString())
+            newItems
         }
-        return data.toList()
     }
 }

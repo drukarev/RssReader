@@ -38,6 +38,7 @@ fun XmlPullParser.parseRss(): List<FeedItem> {
 }
 
 fun XmlPullParser.readRssItem(sourceFeedName: String): FeedItem {
+    var id: String = "" //TODO: throw exception if empty
     var title: String? = null //TODO: check description if title is empty
     var author: String? = null ////TODO: check dc:creator and author
     var date: String? = null
@@ -48,6 +49,7 @@ fun XmlPullParser.readRssItem(sourceFeedName: String): FeedItem {
         }
 
         when (name) {
+            id -> id = readText()
             "title" -> title = readText()
             "creator" -> author = readText()
             "pubDate" -> date = readText()
@@ -56,6 +58,7 @@ fun XmlPullParser.readRssItem(sourceFeedName: String): FeedItem {
     }
 
     return FeedItem(
+        uid = id,
         title = title,
         author = author,
         date = date,

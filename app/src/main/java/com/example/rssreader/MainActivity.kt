@@ -11,6 +11,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.threeten.bp.format.DateTimeFormatter
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,7 +33,7 @@ class MainActivity : AppCompatActivity() {
                         id = id,
                         title = item.title ?: "No title",
                         author = item.author ?: "No author",
-                        date = item.date ?: "No date",
+                        date = item.date?.format(DateTimeFormatter.ofPattern("dd MMMM, HH:mm")) ?: "No date",
                         sourceFeedName = item.sourceFeedName ?: "SourceFeedName"
                     )
                 }

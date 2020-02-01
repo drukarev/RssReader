@@ -1,7 +1,7 @@
 package com.example.rssreader.parser
 
-import android.util.Log
 import com.example.rssreader.model.FeedItem
+import org.threeten.bp.OffsetDateTime
 import org.xmlpull.v1.XmlPullParser
 
 //TODO: check which fields are optional in atom
@@ -64,7 +64,7 @@ fun XmlPullParser.readAtomItem(sourceFeedName: String): FeedItem {
         uid = id,
         title = title,
         author = author,
-        date = date,
+        date = OffsetDateTime.parse(date),
         sourceFeedName = sourceFeedName
     )
 }

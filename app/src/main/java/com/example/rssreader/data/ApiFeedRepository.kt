@@ -47,8 +47,7 @@ class ApiFeedRepository {
 
             db.feedDao().insertAll(data.toList())
 
-            val newItems = db.feedDao().getAll()
-            Log.e("Items from DB", newItems.toString())
+            val newItems = db.feedDao().getAllSortedByDate()
             newItems
         }
     }

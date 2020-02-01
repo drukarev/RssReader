@@ -1,6 +1,8 @@
 package com.example.rssreader.parser
 
 import com.example.rssreader.model.FeedItem
+import org.threeten.bp.OffsetDateTime
+import org.threeten.bp.format.DateTimeFormatter
 import org.xmlpull.v1.XmlPullParser
 
 //TODO: check which fields are optional in rss
@@ -49,7 +51,7 @@ fun XmlPullParser.readRssItem(sourceFeedName: String): FeedItem {
         }
 
         when (name) {
-            id -> id = readText()
+            "guid" -> id = readText()
             "title" -> title = readText()
             "creator" -> author = readText()
             "pubDate" -> date = readText()
@@ -61,7 +63,7 @@ fun XmlPullParser.readRssItem(sourceFeedName: String): FeedItem {
         uid = id,
         title = title,
         author = author,
-        date = date,
+        date = OffsetDateTime.parse(date, DateTimeFormatter.RFC_1123_DATE_TIME),
         sourceFeedName = sourceFeedName
     )
 }

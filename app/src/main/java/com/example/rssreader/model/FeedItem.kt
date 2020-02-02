@@ -1,5 +1,7 @@
 package com.example.rssreader.model
 
+import android.content.Context
+import androidx.paging.DataSource
 import androidx.room.*
 import org.threeten.bp.Instant
 import org.threeten.bp.OffsetDateTime
@@ -17,7 +19,7 @@ data class FeedItem(
 @Dao
 interface FeedDao {
     @Query("SELECT * FROM FeedItem ORDER BY date DESC ")
-    fun getAllSortedByDate(): List<FeedItem>
+    fun feedByDate(): DataSource.Factory<Int, FeedItem>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(users: List<FeedItem>)
@@ -27,6 +29,21 @@ interface FeedDao {
 @TypeConverters(DatabaseTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun feedDao(): FeedDao
+
+    companion object { //TODO: move to dependency injection
+        private var instance: AppDatabase? = null
+        @Synchronized
+        fun get(context: Context): AppDatabase {
+            if (instance == null) {
+                instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java, "feeds"
+                ).build()
+
+            }
+            return instance!!
+        }
+    }
 }
 
 class DatabaseTypeConverters {

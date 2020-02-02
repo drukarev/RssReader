@@ -1,8 +1,6 @@
 package com.example.rssreader.data
 
 import android.content.Context
-import android.util.Log
-import androidx.room.Room
 import com.example.rssreader.model.AppDatabase
 import com.example.rssreader.model.FeedItem
 import com.example.rssreader.parser.parse
@@ -18,6 +16,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 class ApiFeedRepository {
 
     private val feeds = listOf(
+        "https://habr.com/ru/rss/all/all/?fl=ru", //TODO: remove
         "https://blog.jetbrains.com/feed/",
         "https://www.objc.io/feed.xml",
         "https://bitbucket.org/blog/feed",
@@ -26,7 +25,7 @@ class ApiFeedRepository {
         "https://about.gitlab.com/atom.xml"
     )
 
-    suspend fun getFeedItems(applicationContext: Context): List<FeedItem> {
+    suspend fun updateFeedItems(applicationContext: Context) {
         return withContext(Dispatchers.IO) {
             val client = HttpClient(Android)
 
@@ -39,16 +38,7 @@ class ApiFeedRepository {
                 }
             }
 
-            //TODO: db should be initialized only once
-            val db = Room.databaseBuilder(
-                applicationContext,
-                AppDatabase::class.java, "feeds"
-            ).build()
-
-            db.feedDao().insertAll(data.toList())
-
-            val newItems = db.feedDao().getAllSortedByDate()
-            newItems
+            AppDatabase.get(applicationContext).feedDao().insertAll(data.toList())
         }
     }
 }

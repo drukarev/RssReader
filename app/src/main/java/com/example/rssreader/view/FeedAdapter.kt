@@ -2,15 +2,12 @@ package com.example.rssreader.view
 
 import android.content.Context
 import android.view.ViewGroup
-import androidx.recyclerview.widget.AsyncDifferConfig
-import androidx.recyclerview.widget.ListAdapter
+import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rssreader.model.FeedCardViewModel
 import kotlinx.android.synthetic.main.item_feed_card.view.*
 
-class FeedAdapter : ListAdapter<FeedCardViewModel, RecyclerView.ViewHolder>(
-    AsyncDifferConfig.Builder(FeedCardDiffCallback()).build()
-) {
+class FeedAdapter : PagedListAdapter<FeedCardViewModel, RecyclerView.ViewHolder>(FeedCardDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, itemViewType: Int): RecyclerView.ViewHolder {
         return Data(parent.context)
@@ -18,11 +15,21 @@ class FeedAdapter : ListAdapter<FeedCardViewModel, RecyclerView.ViewHolder>(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = getItem(position)
-        holder.itemView.apply {
-            title.text = item.title
-            author.text = item.author
-            date.text = item.date
-            sourceFeedName.text = item.sourceFeedName
+        if (item != null) {
+            holder.itemView.apply {
+                title.text = item.title
+                author.text = item.author
+                date.text = item.date
+                sourceFeedName.text = item.sourceFeedName
+            }
+        } else {
+            //TODO: placeholder
+            holder.itemView.apply {
+                title.text = "---"
+                author.text = "---"
+                date.text = "---"
+                sourceFeedName.text = "---"
+            }
         }
     }
 }

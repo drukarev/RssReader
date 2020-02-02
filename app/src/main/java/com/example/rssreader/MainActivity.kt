@@ -1,17 +1,16 @@
 package com.example.rssreader
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import com.example.rssreader.data.ApiFeedRepository
-import com.example.rssreader.model.FeedCardViewModel
+import com.example.rssreader.model.FeedViewModel
 import com.example.rssreader.view.FeedAdapter
 import com.example.rssreader.view.FeedItemDecoration
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.threeten.bp.format.DateTimeFormatter
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,26 +24,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        val repository = ApiFeedRepository()
-        GlobalScope.launch(Dispatchers.Main) {
-            val items = repository.getFeedItems(this@MainActivity.applicationContext)
-                .mapIndexed { id, item ->
-                    FeedCardViewModel(
-                        id = id,
-                        title = item.title ?: "No title",
-                        author = item.author ?: "No author",
-                        date = item.date?.format(DateTimeFormatter.ofPattern("dd MMMM, HH:mm")) ?: "No date",
-                        sourceFeedName = item.sourceFeedName ?: "SourceFeedName"
-                    )
-                }
-            Log.e("Items", items.toString())
-            adapter.submitList(items)
+        GlobalScope.launch {
+            val repository = ApiFeedRepository()
+            repository.updateFeedItems(this@MainActivity.applicationContext)
         }
     }
 
     private fun setUpFeed() {
+        val viewModel: FeedViewModel by viewModels()
         adapter = FeedAdapter()
         feed.addItemDecoration(FeedItemDecoration(resources.getDimensionPixelOffset(R.dimen.spaceM)))
+        viewModel.feed.observe(this, Observer { adapter.submitList(it) })
         feed.adapter = adapter
     }
 }

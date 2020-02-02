@@ -9,6 +9,7 @@ import com.example.rssreader.model.FeedViewModel
 import com.example.rssreader.view.FeedAdapter
 import com.example.rssreader.view.FeedItemDecoration
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -22,12 +23,15 @@ class MainActivity : AppCompatActivity() {
         setUpFeed()
     }
 
+    override fun onDestroy() {
+        refreshContainer.setOnRefreshListener(null)
+        super.onDestroy()
+    }
+
     override fun onResume() {
         super.onResume()
-        GlobalScope.launch {
-            val repository = ApiFeedRepository()
-            repository.updateFeedItems(this@MainActivity.applicationContext)
-        }
+        startUpdate()
+        refreshContainer.isRefreshing = true
     }
 
     private fun setUpFeed() {
@@ -36,5 +40,17 @@ class MainActivity : AppCompatActivity() {
         feed.addItemDecoration(FeedItemDecoration(resources.getDimensionPixelOffset(R.dimen.spaceM)))
         viewModel.feed.observe(this, Observer { adapter.submitList(it) })
         feed.adapter = adapter
+
+        refreshContainer.setOnRefreshListener {
+            startUpdate()
+        }
+    }
+
+    private fun startUpdate() {
+        GlobalScope.launch(Dispatchers.Main) {
+            val repository = ApiFeedRepository()
+            repository.updateFeedItems(this@MainActivity.applicationContext)
+            refreshContainer.isRefreshing = false
+        }
     }
 }

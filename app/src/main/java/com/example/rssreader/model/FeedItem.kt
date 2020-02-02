@@ -7,9 +7,9 @@ import org.threeten.bp.Instant
 import org.threeten.bp.OffsetDateTime
 import org.threeten.bp.ZoneId
 
-@Entity
+@Entity(tableName = "feed", indices = [Index(value = ["date"])])
 data class FeedItem(
-    @PrimaryKey val uid: String,
+    @PrimaryKey @ColumnInfo(name = "id") val uid: String,
     @ColumnInfo(name = "title") val title: String?,
     @ColumnInfo(name = "author") val author: String?,
     @ColumnInfo(name = "date") val date: OffsetDateTime?, //TODO: check for date correctness
@@ -18,7 +18,7 @@ data class FeedItem(
 
 @Dao
 interface FeedDao {
-    @Query("SELECT * FROM FeedItem ORDER BY date DESC ")
+    @Query("SELECT * FROM feed ORDER BY date DESC ")
     fun feedByDate(): DataSource.Factory<Int, FeedItem>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

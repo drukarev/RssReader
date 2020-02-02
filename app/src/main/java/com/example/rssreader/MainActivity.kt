@@ -3,7 +3,9 @@ package com.example.rssreader
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rssreader.data.ApiFeedRepository
 import com.example.rssreader.model.FeedViewModel
 import com.example.rssreader.view.FeedAdapter
@@ -35,13 +37,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setUpFeed() {
+        updateButton.setOnClickListener {
+            feed.scrollToPosition(0)
+            updateButton.isVisible = false
+        }
+
         val viewModel: FeedViewModel by viewModels()
-        adapter = FeedAdapter()
+        adapter = FeedAdapter {
+            if ((feed.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition() > 0) {
+                updateButton.isVisible = true
+            }
+        }
         feed.addItemDecoration(FeedItemDecoration(resources.getDimensionPixelOffset(R.dimen.spaceM)))
-        viewModel.feed.observe(this, Observer { adapter.submitList(it) })
+        viewModel.feed.observe(this, Observer {
+            adapter.submitList(it)
+        })
         feed.adapter = adapter
 
         refreshContainer.setOnRefreshListener {
+            updateButton.isVisible = false
             startUpdate()
         }
     }

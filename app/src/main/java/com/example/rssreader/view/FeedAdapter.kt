@@ -2,12 +2,15 @@ package com.example.rssreader.view
 
 import android.content.Context
 import android.view.ViewGroup
+import androidx.paging.PagedList
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rssreader.model.FeedCardViewModel
 import kotlinx.android.synthetic.main.item_feed_card.view.*
 
-class FeedAdapter : PagedListAdapter<FeedCardViewModel, RecyclerView.ViewHolder>(FeedCardDiffCallback()) {
+class FeedAdapter(
+    val onListChanged: () -> Unit
+) : PagedListAdapter<FeedCardViewModel, RecyclerView.ViewHolder>(FeedCardDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, itemViewType: Int): RecyclerView.ViewHolder {
         return Data(parent.context)
@@ -30,6 +33,16 @@ class FeedAdapter : PagedListAdapter<FeedCardViewModel, RecyclerView.ViewHolder>
                 date.text = "---"
                 sourceFeedName.text = "---"
             }
+        }
+    }
+
+    override fun onCurrentListChanged(
+        previousList: PagedList<FeedCardViewModel>?,
+        currentList: PagedList<FeedCardViewModel>?
+    ) {
+        super.onCurrentListChanged(previousList, currentList)
+        if (previousList != currentList) {
+            onListChanged()
         }
     }
 }

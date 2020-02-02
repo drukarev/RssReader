@@ -5,7 +5,7 @@
     <color name="colorAccent">#FFFFFF</color>
 
     <color name="textPrimary">#000000</color>
-    <color name="textHeadline">#FFFFFF</color>
+    <color name="textPrimaryInverted">#FFFFFF</color>
     <color name="textSecondary">#4D4C4C</color>
     <color name="textInfo">#4D4C4C</color>
 </resources>

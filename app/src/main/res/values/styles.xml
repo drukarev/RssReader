@@ -11,7 +11,7 @@
     </style>
 
     <style name="Text.Headline">
-        <item name="android:textColor">@color/textHeadline</item>
+        <item name="android:textColor">@color/textPrimaryInverted</item>
     </style>
 
     <style name="Text.Headline.Primary">
@@ -37,6 +37,11 @@
         <item name="android:textSize">@dimen/textS</item>
     </style>
 
+    <style name="Text.Button">
+        <item name="android:textColor">@color/textPrimaryInverted</item>
+        <item name="android:textSize">@dimen/textM</item>
+    </style>
+
     <style name="CollapsingToolbarLayout">
         <item name="collapsedTitleTextAppearance">@style/Text.Headline.Secondary</item>
         <item name="expandedTitleTextAppearance">@style/Text.Headline.Primary</item>
@@ -47,5 +52,14 @@
         <item name="expandedTitleMarginTop">0dp</item>
         <item name="layout_scrollFlags">scroll|exitUntilCollapsed|snap</item>
         <item name="titleEnabled">true</item>
+    </style>
+
+    <style name="Button">
+        <item name="android:paddingTop">@dimen/spaceS</item>
+        <item name="android:paddingBottom">@dimen/spaceS</item>
+        <item name="android:paddingStart">@dimen/spaceM</item>
+        <item name="android:paddingEnd">@dimen/spaceM</item>
+        <item name="android:background">@drawable/button_state</item>
+        <item name="android:textAppearance">@style/Text.Button</item>
     </style>
 </resources>

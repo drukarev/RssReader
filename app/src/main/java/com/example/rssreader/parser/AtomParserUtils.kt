@@ -61,7 +61,7 @@ fun XmlPullParser.readAtomItem(sourceFeedName: String): FeedItem {
     }
 
     return FeedItem(
-        uid = id,
+        id = id,
         title = title,
         author = author,
         date = OffsetDateTime.parse(date),

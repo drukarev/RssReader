@@ -1,43 +1,32 @@
 package com.example.rssreader.parser
 
+import android.util.Log
 import android.util.Xml
+import com.example.rssreader.model.Failure.RssParsingFailure
 import com.example.rssreader.model.FeedItem
+import com.example.rssreader.model.Response
+import com.example.rssreader.model.Response.Fail
+import com.example.rssreader.model.Response.Result
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 import java.io.InputStream
+import java.lang.Exception
 
-fun parse(inputStream: InputStream): List<FeedItem> {
+fun parseAsRss(inputStream: InputStream): Response<List<FeedItem>> {
     val parser: XmlPullParser = Xml.newPullParser()
     parser.setInput(inputStream, null)
-    parser.nextTag()
-
-    return when {
-        parser.name == "rss" -> parser.parseRss()
-        parser.name == "feed" -> parser.parseAtom()
-        else -> emptyList()
+    return try {
+        Result(parser.parseRss())
+    } catch (e: XmlPullParserException) {
+        logParsingFailure(e)
+        Fail(RssParsingFailure)
+    } catch (e: IOException) {
+        logParsingFailure(e)
+        Fail(RssParsingFailure)
     }
 }
 
-@Throws(IOException::class, XmlPullParserException::class)
-fun XmlPullParser.readText(): String {
-    var result = ""
-    val event = next()
-    if (event == XmlPullParser.TEXT || event == XmlPullParser.CDSECT) {
-        result = text
-        nextTag()
-    }
-    return result
-}
-
-@Throws(XmlPullParserException::class, IOException::class)
-fun XmlPullParser.skip() {
-    check(eventType == XmlPullParser.START_TAG)
-    var depth = 1
-    while (depth != 0) {
-        when (next()) {
-            XmlPullParser.END_TAG -> depth--
-            XmlPullParser.START_TAG -> depth++
-        }
-    }
+private fun logParsingFailure(e: Exception) {
+    Log.d("LogParsingFailure:", "Failed to parse rss", e)
 }

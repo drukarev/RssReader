@@ -6,8 +6,9 @@ import kotlinx.coroutines.withContext
 
 class SortingPaginationRepository<T : Any>(
     private val formatFailureItem: (Failure) -> ListItemViewModel.Error,
+    private val formatFailureFullScreen: (Failure) -> ListErrorViewModel<T>,
     private val repository: ListRepository<T>,
-    private val toViewModel: (item: T) -> ListItemViewModel.Data
+    private val formatFeedItem: (item: T) -> ListItemViewModel.Data
 ) : PaginationListRepository<T> {
 
     private var listState: ListState<T> = ListState.Start()
@@ -35,7 +36,7 @@ class SortingPaginationRepository<T : Any>(
             }
             is ListState.End -> {
                 ListDataViewModel(
-                    items = (listState.loadedItems.map { toViewModel(it) }),
+                    items = (listState.loadedItems.map { formatFeedItem(it) }),
                     hasMoreItems = false
                 )
             }
@@ -45,7 +46,7 @@ class SortingPaginationRepository<T : Any>(
     private suspend fun loadPage(): ListViewModel<T> {
         val oldItems: List<T> = listState.loadedItems
 
-        return when (val page = repository.getPage(listState is ListState.Start)) {
+        return when (val page = repository.getPage(loadFromScratch = listState is ListState.Start)) {
             is Response.Result -> {
                 //TODO: sort
                 val allItems = mutableListOf<T>().apply {
@@ -60,13 +61,10 @@ class SortingPaginationRepository<T : Any>(
                 }
 
                 val viewModel: ListViewModel<T> = if (allItems.isEmpty()) {
-                    ListErrorViewModel(
-                        title = "No items",
-                        subtitle = "Literally no items"
-                    )
+                    formatFailureFullScreen(Failure.NoItems)
                 } else {
                     val hasMoreItems = listState is ListState.Middle
-                    val items = allItems.map { toViewModel(it) }
+                    val items = allItems.map { formatFeedItem(it) }
                     val itemsWithProgress = if (hasMoreItems) items.plus(ListItemViewModel.Progress) else items
                     ListDataViewModel(
                         items = itemsWithProgress,
@@ -77,13 +75,10 @@ class SortingPaginationRepository<T : Any>(
             }
             is Response.Fail -> {
                 if (oldItems.isEmpty()) {
-                    ListErrorViewModel(
-                        title = "Error",
-                        subtitle = "Try to Retry"
-                    )
+                    formatFailureFullScreen(page.value)
                 } else {
                     val itemsWithError =
-                        oldItems.map { toViewModel(it) }.toMutableList() + formatFailureItem(page.value)
+                        oldItems.map { formatFeedItem(it) }.toMutableList() + formatFailureItem(page.value)
                     ListDataViewModel(itemsWithError, hasMoreItems = false)
                 }
             }

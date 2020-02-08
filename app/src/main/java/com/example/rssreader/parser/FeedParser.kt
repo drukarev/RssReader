@@ -2,7 +2,7 @@ package com.example.rssreader.parser
 
 import android.util.Log
 import android.util.Xml
-import com.example.rssreader.model.Failure.RssParsingFailure
+import com.example.rssreader.model.Failure.InvalidRssXml
 import com.example.rssreader.model.FeedItem
 import com.example.rssreader.model.Response
 import com.example.rssreader.model.Response.Fail
@@ -20,10 +20,10 @@ fun parseAsRss(inputStream: InputStream): Response<List<FeedItem>> {
         Result(parser.parseRss())
     } catch (e: XmlPullParserException) {
         logParsingFailure(e)
-        Fail(RssParsingFailure)
+        Fail(InvalidRssXml)
     } catch (e: IOException) {
         logParsingFailure(e)
-        Fail(RssParsingFailure)
+        Fail(InvalidRssXml)
     }
 }
 

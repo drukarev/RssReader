@@ -3,6 +3,7 @@ package com.example.rssreader.pagination
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.rssreader.R
 import com.example.rssreader.model.*
 import com.example.rssreader.view.FeedCardDiffCallback
 import kotlinx.android.synthetic.main.item_feed_card.view.*
@@ -39,7 +40,7 @@ class FeedAdapter(
             is ListItemViewModel.Error -> {
                 holder.itemView.apply {
                     title.text = item.errorText
-                    author.text = item.refreshText
+                    author.text = context.getString(R.string.reload)
                     date.text = "---"
                     sourceFeedName.text = "---"
                 }

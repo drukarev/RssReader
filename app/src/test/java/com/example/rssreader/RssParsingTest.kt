@@ -1,6 +1,6 @@
 package com.example.rssreader
 
-import com.example.rssreader.model.Failure.RssParsingFailure
+import com.example.rssreader.model.Failure.InvalidRssXml
 import com.example.rssreader.model.FeedItem
 import com.example.rssreader.model.Response
 import com.example.rssreader.model.Response.Fail
@@ -24,8 +24,8 @@ class RssParsingTest(
         @[ParameterizedRobolectricTestRunner.Parameters(name = "{0},{1}") JvmStatic]
         fun data(): Collection<Array<Any>> {
             return listOf(
-                arrayOf("", Fail(RssParsingFailure)),
-                arrayOf("rss", Fail(RssParsingFailure)),
+                arrayOf("", Fail(InvalidRssXml)),
+                arrayOf("rss", Fail(InvalidRssXml)),
                 arrayOf(
                     """<rss version="2.0">
                          <title>TestChannelTitle</title>
@@ -36,7 +36,7 @@ class RssParsingTest(
                           <pubDate>Sun, 06 Sep 2009 12:00:00 +0000</pubDate>
                           <creator>TestAuthor</creator>
                          </item>
-                        </rss>""", Fail(RssParsingFailure)
+                        </rss>""", Fail(InvalidRssXml)
                 ),
                 arrayOf(
                     """<rss version="2.0">

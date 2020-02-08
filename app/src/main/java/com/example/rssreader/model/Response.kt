@@ -8,5 +8,7 @@ sealed class Response<out T : Any> {
 
 sealed class Failure {
     object Unknown : Failure()
-    object RssParsingFailure : Failure()
+    object NoItems : Failure()
+    object InvalidRssXml : Failure()
+    object NoConnection : Failure()
 }

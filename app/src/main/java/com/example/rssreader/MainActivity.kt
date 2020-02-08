@@ -1,13 +1,14 @@
 package com.example.rssreader
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.os.Bundle
 import android.view.View
 import android.widget.ViewAnimator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.rssreader.data.ApiFeedRepository
-import com.example.rssreader.data.PaginationListRepository
-import com.example.rssreader.data.SortingPaginationRepository
+import com.example.rssreader.data.*
 import com.example.rssreader.model.*
 import com.example.rssreader.pagination.*
 import com.example.rssreader.view.FeedItemDecoration
@@ -29,26 +30,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         repository = SortingPaginationRepository(
-            formatFailureItem = {
-                ListItemViewModel.Error(
-                    errorText = "Error",
-                    refreshText = "Retry"
-                )
-            },
-            repository = ApiFeedRepository(),
-            toViewModel = {
-                ListItemViewModel.Data(
-                    FeedCardViewModel(
-                        id = it.id,
-                        title = it.title ?: "No title",
-                        author = it.author ?: "No author",
-                        date = it.date?.format(DateTimeFormatter.ofPattern("dd MMMM, HH:mm")) ?: "No date",
-                        sourceFeedName = it.sourceFeedName ?: "SourceFeedName"
-                    )
-                )
-            }
+            formatFailureItem = ::formatFailureItem,
+            formatFailureFullScreen = ::formatFailureFullScreen,
+            repository = ApiFeedRepository { hasInternetConnection(this) },
+            formatFeedItem = ::formatFeedItem
         )
 
+        errorRefreshButton.setOnClickListener {
+            refreshContainer.isRefreshing = true
+            loadFromScratch()
+        }
         setUpFeed()
         loadFromScratch()
     }
@@ -108,5 +99,11 @@ class MainActivity : AppCompatActivity() {
                 displayedChild = indexOfChild
             }
         }
+    }
+
+    fun hasInternetConnection(context: Context): Boolean {
+        val cm: ConnectivityManager? = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork: NetworkInfo? = cm?.activeNetworkInfo
+        return activeNetwork?.isConnectedOrConnecting ?: false
     }
 }

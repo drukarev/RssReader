@@ -46,7 +46,7 @@ class ApiFeedRepository(
                 try {
                     val response = httpClient.get<InputStream>("$url$currentPage")
                     when (val parsedResponse = parseAsRss(response)) {
-                        is Response.Result -> return@async parsedResponse.value
+                        is Response.Result -> parsedResponse.value
                         is Response.Fail -> {
                             Log.d(TAG, "Parsing failure")
                             emptyList<FeedItem>()

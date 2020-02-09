@@ -54,8 +54,6 @@ class MainActivity : AppCompatActivity(), FeedContract.View {
             }
             is ScreenViewModel.Progress -> {
                 refreshContainer.isRefreshing = true
-                feed.clearOnScrollListeners()
-                dataContainer.showChild(refreshContainer)
             }
         }
     }

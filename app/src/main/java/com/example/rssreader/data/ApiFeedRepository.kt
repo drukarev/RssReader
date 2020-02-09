@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 class ApiFeedRepository(
     private val hasInternetConnection: () -> Boolean
-    ) : ListRepository<FeedItem> {
+) : ListRepository<FeedItem> {
 
     private val feeds = listOf(
         "https://blog.us.playstation.com/feed/?paged=",
@@ -37,13 +37,7 @@ class ApiFeedRepository(
         if (loadFromScratch) {
             currentPage = 1
         }
-        val client = HttpClient(Android) {
-            HttpResponseValidator {
-                validateResponse {
-                    Log.e("Response", it.toString())
-                }
-            }
-        }
+        val client = HttpClient(Android)
 
         val data = ConcurrentLinkedQueue<FeedItem>()
         runBlocking {
@@ -63,9 +57,8 @@ class ApiFeedRepository(
         }
         currentPage++
 
-        val list = data.toList()
         return Response.Result(
-            Page(list, list.isNotEmpty())
+            Page(data, data.isNotEmpty())
         )
     }
 }

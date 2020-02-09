@@ -70,7 +70,7 @@ fun XmlPullParser.readRssItem(sourceFeedName: String): FeedItem {
         id = id,
         title = title,
         author = author,
-        date = OffsetDateTime.parse(date, DateTimeFormatter.RFC_1123_DATE_TIME),
+        date = date?.run { OffsetDateTime.parse(date, DateTimeFormatter.RFC_1123_DATE_TIME) } ?: OffsetDateTime.now(),
         sourceFeedName = sourceFeedName
     )
 }

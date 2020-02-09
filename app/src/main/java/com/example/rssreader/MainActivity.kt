@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.ViewAnimator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.SortedList
 import com.example.rssreader.data.*
 import com.example.rssreader.model.*
 import com.example.rssreader.pagination.*
@@ -31,6 +32,13 @@ class MainActivity : AppCompatActivity() {
 
         repository = SortingPaginationRepository(
             repository = ApiFeedRepository { hasInternetConnection(this) },
+            sortingComparator = Comparator { o1, o2 ->
+                return@Comparator if (o1.id == o2.id) {
+                    0
+                } else {
+                    o2.date.compareTo(o1.date) // reversed comparison
+                }
+            },
             formatFailureItem = { formatFailureItem(this, it) },
             formatFailureFullScreen = { formatFailureFullScreen(this, it) },
             formatFeedItem = { formatFeedItem(this, it) }

@@ -3,19 +3,22 @@ package com.example.rssreader.data
 import com.example.rssreader.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.*
+import kotlin.Comparator
 
 class SortingPaginationRepository<T : Any>(
+    private val repository: ListRepository<T>,
+    private val sortingComparator: Comparator<T>,
     private val formatFailureItem: (Failure) -> ListItemViewModel.Error,
     private val formatFailureFullScreen: (Failure) -> ListErrorViewModel<T>,
-    private val repository: ListRepository<T>,
     private val formatFeedItem: (item: T) -> ListItemViewModel.Data
 ) : PaginationListRepository<T> {
 
-    private var listState: ListState<T> = ListState.Start()
+    private var listState: ListState<T> = ListState.Start(sortingComparator)
 
     override suspend fun loadFromScratch(): ListViewModel<T> {
         return withContext(Dispatchers.IO) {
-            listState = ListState.Start()
+            listState = ListState.Start(sortingComparator)
             loadData()
         }
     }
@@ -44,28 +47,25 @@ class SortingPaginationRepository<T : Any>(
     }
 
     private suspend fun loadPage(): ListViewModel<T> {
-        val oldItems: List<T> = listState.loadedItems
+        val items: TreeSet<T> = listState.loadedItems
 
         return when (val page = repository.getPage(loadFromScratch = listState is ListState.Start)) {
             is Response.Result -> {
-                //TODO: sort
-                val allItems = mutableListOf<T>().apply {
-                    addAll(oldItems)
-                    addAll(page.value.data)
-                }.toList()
+                items.addAll(page.value.data)
 
                 listState = if (page.value.hasMoreItems) {
-                    ListState.Middle(allItems)
+                    ListState.Middle(items)
                 } else {
-                    ListState.End(allItems)
+                    ListState.End(items)
                 }
 
-                val viewModel: ListViewModel<T> = if (allItems.isEmpty()) {
+                val viewModel: ListViewModel<T> = if (items.isEmpty()) {
                     formatFailureFullScreen(Failure.NoItems)
                 } else {
                     val hasMoreItems = listState is ListState.Middle
-                    val items = allItems.map { formatFeedItem(it) }
-                    val itemsWithProgress = if (hasMoreItems) items.plus(ListItemViewModel.Progress) else items
+                    val viewModels = items.map { formatFeedItem(it) }
+                    val itemsWithProgress =
+                        if (hasMoreItems) viewModels.plus(ListItemViewModel.Progress) else viewModels
                     ListDataViewModel(
                         items = itemsWithProgress,
                         hasMoreItems = hasMoreItems
@@ -74,11 +74,11 @@ class SortingPaginationRepository<T : Any>(
                 viewModel
             }
             is Response.Fail -> {
-                if (oldItems.isEmpty()) {
+                if (items.isEmpty()) {
                     formatFailureFullScreen(page.value)
                 } else {
                     val itemsWithError =
-                        oldItems.map { formatFeedItem(it) }.toMutableList() + formatFailureItem(page.value)
+                        items.map { formatFeedItem(it) }.toMutableList() + formatFailureItem(page.value)
                     ListDataViewModel(itemsWithError, hasMoreItems = false)
                 }
             }
@@ -86,13 +86,20 @@ class SortingPaginationRepository<T : Any>(
     }
 }
 
-sealed class ListState<M> {
-    abstract val loadedItems: List<M>
+sealed class ListState<T> {
+    abstract val loadedItems: TreeSet<T>
 
-    class Start<M> : ListState<M>() {
-        override val loadedItems: List<M> = emptyList()
+    class Start<T>(
+        sortingComparator: Comparator<T>
+    ) : ListState<T>() {
+        override val loadedItems: TreeSet<T> = TreeSet(sortingComparator)
     }
 
-    data class Middle<M>(override val loadedItems: List<M>) : ListState<M>()
-    data class End<M>(override val loadedItems: List<M>) : ListState<M>()
+    data class Middle<T>(
+        override val loadedItems: TreeSet<T>
+    ) : ListState<T>()
+
+    data class End<T>(
+        override val loadedItems: TreeSet<T>
+    ) : ListState<T>()
 }

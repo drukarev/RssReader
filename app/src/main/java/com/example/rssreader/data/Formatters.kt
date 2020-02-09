@@ -6,7 +6,7 @@ import com.example.rssreader.model.*
 import com.example.rssreader.model.Failure.*
 import org.threeten.bp.format.DateTimeFormatter
 
-private const val DATE_PATTERN = "dd MMMM, HH:mm"
+private const val DATE_PATTERN = "YYYY.MM.dd, HH:mm"
 
 fun formatFeedItem(context: Context, item: FeedItem): ListItemViewModel.Data {
     return ListItemViewModel.Data(
@@ -14,8 +14,7 @@ fun formatFeedItem(context: Context, item: FeedItem): ListItemViewModel.Data {
             id = item.id,
             title = item.title ?: context.getString(R.string.feed_item_no_title),
             author = item.author ?: context.getString(R.string.feed_item_no_author),
-            date = item.date?.format(DateTimeFormatter.ofPattern(DATE_PATTERN))
-                ?: context.getString(R.string.feed_item_no_date),
+            date = item.date.format(DateTimeFormatter.ofPattern(DATE_PATTERN)),
             sourceFeedName = item.sourceFeedName
         )
     )

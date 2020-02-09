@@ -1,4 +1,12 @@
 <resources>
-    <string name="app_name">RssReader</string>
-    <string name="reload">Reload</string>
+    <string name="app_name">Rss reader</string>
+    <string name="button_reload">Reload</string>
+    <string name="feed_item_no_title">No title</string>
+    <string name="feed_item_no_author">No author</string>
+    <string name="feed_item_no_date">No date</string>
+    <string name="error_unknown">Unknown error</string>
+    <string name="error_no_items">No items in feed</string>
+    <string name="error_invalid_rss_xml">Invalid xml</string>
+    <string name="error_no_connection">No connection</string>
+    <string name="error_subtitle_retry">Try to refresh</string>
 </resources>

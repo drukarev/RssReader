@@ -21,17 +21,10 @@ sealed class ListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
     })
 
     class Error(context: Context) : ListViewHolder(FeedCardView(context).apply { //TODO: change view
-        layoutParams = ViewGroup.LayoutParams(
-            MATCH_PARENT,
-            WRAP_CONTENT
-        )
+        layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
     })
 
     class Data(context: Context) : ListViewHolder(FeedCardView(context).apply {
-        layoutParams = ViewGroup.LayoutParams(
-            MATCH_PARENT,
-            WRAP_CONTENT
-        )
+        layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
     })
-
 }

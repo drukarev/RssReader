@@ -40,7 +40,7 @@ class FeedAdapter(
             is ListItemViewModel.Error -> {
                 holder.itemView.apply {
                     title.text = item.errorText
-                    author.text = context.getString(R.string.reload)
+                    author.text = context.getString(R.string.button_reload)
                     date.text = "---"
                     sourceFeedName.text = "---"
                 }

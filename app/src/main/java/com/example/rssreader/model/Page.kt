@@ -4,4 +4,3 @@ data class Page<T : Any>(
     val data: List<T>,
     val hasMoreItems: Boolean
 )
-

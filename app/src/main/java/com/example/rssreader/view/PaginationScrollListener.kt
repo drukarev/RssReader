@@ -3,9 +3,11 @@ package com.example.rssreader.view
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
+private const val THRESHOLD_DEFAULT = 50
+
 internal class PaginationScrollListener(
     private val layoutManager: LinearLayoutManager,
-    private val threshold: Int,
+    private val threshold: Int = THRESHOLD_DEFAULT,
     private val loadNextPage: () -> Unit
 ) : RecyclerView.OnScrollListener() {
 

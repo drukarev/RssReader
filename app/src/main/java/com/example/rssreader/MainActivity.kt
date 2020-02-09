@@ -30,10 +30,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         repository = SortingPaginationRepository(
-            formatFailureItem = ::formatFailureItem,
-            formatFailureFullScreen = ::formatFailureFullScreen,
             repository = ApiFeedRepository { hasInternetConnection(this) },
-            formatFeedItem = ::formatFeedItem
+            formatFailureItem = { formatFailureItem(this, it) },
+            formatFailureFullScreen = { formatFailureFullScreen(this, it) },
+            formatFeedItem = { formatFeedItem(this, it) }
         )
 
         errorRefreshButton.setOnClickListener {
@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity() {
             is ListDataViewModel -> {
                 dataContainer.showChild(refreshContainer)
                 adapter.submitList(viewModel.items)
-                feed.addOnScrollListener(PaginationScrollListener(feed.layoutManager as LinearLayoutManager, 50) {
+                feed.addOnScrollListener(PaginationScrollListener(feed.layoutManager as LinearLayoutManager) {
                     autoLoad()
                 })
             }
@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun hasInternetConnection(context: Context): Boolean {
+    private fun hasInternetConnection(context: Context): Boolean {
         val cm: ConnectivityManager? = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetwork: NetworkInfo? = cm?.activeNetworkInfo
         return activeNetwork?.isConnectedOrConnecting ?: false

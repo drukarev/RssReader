@@ -7,5 +7,5 @@ data class FeedItem(
     val title: String?,
     val author: String?,
     val date: OffsetDateTime?, //TODO: check for date correctness
-    val sourceFeedName: String?
+    val sourceFeedName: String
 )

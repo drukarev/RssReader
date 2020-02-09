@@ -21,7 +21,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
-                app:title="Rss reader" />
+                app:title="@string/app_name" />
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -51,6 +51,4 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center" />
     </ViewAnimator>
-
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

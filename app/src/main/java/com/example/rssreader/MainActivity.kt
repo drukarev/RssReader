@@ -3,9 +3,7 @@ package com.example.rssreader
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.rssreader.data.ApiFeedRepository
-import com.example.rssreader.data.SortingPaginationRepository
-import com.example.rssreader.data.getSortByDataComparator
+import com.example.rssreader.data.*
 import com.example.rssreader.model.FeedCardViewModel
 import com.example.rssreader.model.ScreenViewModel
 import com.example.rssreader.pagination.FeedAdapter
@@ -80,7 +78,7 @@ class MainActivity : AppCompatActivity(), FeedContract.View {
             view = this,
             repository = SortingPaginationRepository(
                 repository = ApiFeedRepository(HttpClient(Android)) { hasInternetConnection(this) },
-                sortingComparator = getSortByDataComparator(),
+                sortingComparator = getSortByDateComparator(), // getSortByPageAndDateComparator() can also be used
                 formatFailureItem = { formatFailureItem<FeedCardViewModel>(this, it) },
                 formatFailureFullScreen = { formatFailureFullScreen(this, it) },
                 formatFeedItem = { formatFeedItem(this, it) }

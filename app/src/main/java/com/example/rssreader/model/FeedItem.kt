@@ -7,6 +7,7 @@ import org.threeten.bp.OffsetDateTime
  */
 data class FeedItem(
     val id: String,
+    val page: Int,
     val date: OffsetDateTime,
     val sourceFeedName: String,
     val title: String?,

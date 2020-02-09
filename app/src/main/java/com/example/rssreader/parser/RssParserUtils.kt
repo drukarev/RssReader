@@ -6,6 +6,7 @@ import org.threeten.bp.format.DateTimeFormatter
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
+import java.util.regex.Pattern
 
 @Throws(XmlPullParserException::class, IOException::class)
 fun XmlPullParser.parseRss(): List<FeedItem> {
@@ -66,12 +67,18 @@ fun XmlPullParser.readRssItem(sourceFeedName: String): FeedItem {
         }
     }
 
+    val pagePattern = Pattern.compile("\\d+")
+    val pageMatcher = pagePattern.matcher(sourceFeedName)
+    val pageFound = pageMatcher.find()
+    val pageNumber = if (pageFound) Integer.parseInt(pageMatcher.group()) else 1
+
     return FeedItem(
         id = id,
         title = title,
         author = author,
         date = date?.run { OffsetDateTime.parse(date, DateTimeFormatter.RFC_1123_DATE_TIME) } ?: OffsetDateTime.now(),
-        sourceFeedName = sourceFeedName
+        sourceFeedName = sourceFeedName,
+        page = pageNumber
     )
 }
 

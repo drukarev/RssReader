@@ -8,7 +8,7 @@ import org.threeten.bp.format.DateTimeFormatter
 
 private const val DATE_PATTERN = "YYYY.MM.dd, HH:mm"
 
-fun formatFeedItem(context: Context, item: FeedItem): ListItemViewModel.Data {
+fun <T : Any> formatFeedItem(context: Context, item: FeedItem): ListItemViewModel.Data<T> {
     return ListItemViewModel.Data(
         FeedCardViewModel(
             id = item.id,
@@ -20,7 +20,7 @@ fun formatFeedItem(context: Context, item: FeedItem): ListItemViewModel.Data {
     )
 }
 
-fun formatFailureItem(context: Context, failure: Failure): ListItemViewModel.Error {
+fun <T : Any> formatFailureItem(context: Context, failure: Failure): ListItemViewModel.Error<T> {
     return ListItemViewModel.Error(failure.getText(context))
 }
 

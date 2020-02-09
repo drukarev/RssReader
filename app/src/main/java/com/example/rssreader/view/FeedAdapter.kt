@@ -10,7 +10,7 @@ import kotlinx.android.synthetic.main.item_feed_card.view.*
 
 class FeedAdapter(
     private val onReloadClick: () -> Unit
-) : ListAdapter<ListItemViewModel, RecyclerView.ViewHolder>(FeedCardDiffCallback()) {
+) : ListAdapter<ListItemViewModel<FeedCardViewModel>, RecyclerView.ViewHolder>(FeedCardDiffCallback()) {
 
     override fun getItemViewType(position: Int): Int = when (getItem(position)) {
         is ListItemViewModel.Data -> ItemViewType.DATA.ordinal

@@ -15,13 +15,13 @@ private const val TAG = "Pagination"
  * Since [PageRepository] doesn't guarantee an order of it's data, elements from the new pages can appear anywhere in the list.
  * Elements are sorted according to the [sortingComparator].
  */
-class SortingPaginationRepository<T : Any>(
+class SortingPaginationRepository<T : Any, R: Any>(
     private val repository: PageRepository<T>,
     private val sortingComparator: Comparator<T>,
-    private val formatFailureItem: (Failure) -> ListItemViewModel.Error,
-    private val formatFailureFullScreen: (Failure) -> ListErrorViewModel<T>,
-    private val formatFeedItem: (item: T) -> ListItemViewModel.Data
-) : PaginationRepository<T> {
+    private val formatFailureItem: (Failure) -> ListItemViewModel.Error<R>,
+    private val formatFailureFullScreen: (Failure) -> ListErrorViewModel<R>,
+    private val formatFeedItem: (item: T) -> ListItemViewModel.Data<R>
+) : PaginationRepository<T, R> {
 
     private var listState: ListState<T> = ListState.Start(sortingComparator)
 
@@ -29,7 +29,7 @@ class SortingPaginationRepository<T : Any>(
      * Removes all stored data and returns first page.
      * All items are sorted according to the [sortingComparator].
      */
-    override suspend fun loadFromScratch(): ListViewModel<T> {
+    override suspend fun loadFromScratch(): ListViewModel<R> {
         return withContext(Dispatchers.IO) {
             Log.d(TAG, "Removing previous data and loading from scratch")
             listState = ListState.Start(sortingComparator)
@@ -41,13 +41,13 @@ class SortingPaginationRepository<T : Any>(
      * Returns all previous items + next page.
      * All items are sorted according to the [sortingComparator].
      */
-    override suspend fun autoLoad(): ListViewModel<T> {
+    override suspend fun autoLoad(): ListViewModel<R> {
         return withContext(Dispatchers.IO) {
             loadData()
         }
     }
 
-    private suspend fun loadData(): ListViewModel<T> {
+    private suspend fun loadData(): ListViewModel<R> {
         Log.d(TAG, "Started loading data. ListState = ${listState::class.java.simpleName}")
         val viewModel = when (listState) {
             is ListState.Start -> {
@@ -67,7 +67,7 @@ class SortingPaginationRepository<T : Any>(
         return viewModel
     }
 
-    private suspend fun loadPage(): ListViewModel<T> {
+    private suspend fun loadPage(): ListViewModel<R> {
         val items: TreeSet<T> = listState.loadedItems
 
         return when (val page = repository.getPage(loadFromScratch = listState is ListState.Start)) {
@@ -80,14 +80,14 @@ class SortingPaginationRepository<T : Any>(
                     ListState.End(items)
                 }
 
-                val viewModel: ListViewModel<T> = if (items.isEmpty()) {
+                val viewModel: ListViewModel<R> = if (items.isEmpty()) {
                     Log.d(TAG, "Loaded successfully, but no items were found. Showing empty state")
                     formatFailureFullScreen(Failure.NoItems)
                 } else {
                     val hasMoreItems = listState is ListState.Middle
                     val viewModels = items.map { formatFeedItem(it) }
                     val itemsWithProgress =
-                        if (hasMoreItems) viewModels.plus(ListItemViewModel.Progress) else viewModels
+                        if (hasMoreItems) viewModels.plus(ListItemViewModel.Progress<R>()) else viewModels
                     Log.d(TAG, "Loaded successfully. Showing items (hasMoreItems=$hasMoreItems)")
                     ListDataViewModel(
                         items = itemsWithProgress,

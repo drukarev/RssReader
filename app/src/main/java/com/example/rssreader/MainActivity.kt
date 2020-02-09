@@ -15,39 +15,39 @@ import com.example.rssreader.view.*
 import com.example.rssreader.view.PaginationScrollListener
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.view_error.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), FeedContract.View {
 
     private lateinit var adapter: FeedAdapter
-    private lateinit var repository: PaginationRepository<FeedItem>
+    private lateinit var presenter: FeedContract.Presenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        repository = SortingPaginationRepository(
-            repository = ApiFeedRepository { hasInternetConnection(this) },
-            sortingComparator = Comparator { o1, o2 ->
-                return@Comparator if (o1.id == o2.id) {
-                    0
-                } else {
-                    o2.date.compareTo(o1.date) // reversed comparison
-                }
-            },
-            formatFailureItem = { formatFailureItem(this, it) },
-            formatFailureFullScreen = { formatFailureFullScreen(this, it) },
-            formatFeedItem = { formatFeedItem(this, it) }
+        presenter = FeedPresenter(
+            view = this,
+            repository = SortingPaginationRepository(
+                repository = ApiFeedRepository { hasInternetConnection(this) },
+                sortingComparator = Comparator { o1, o2 ->
+                    return@Comparator if (o1.id == o2.id) {
+                        0
+                    } else {
+                        o2.date.compareTo(o1.date) // reversed comparison
+                    }
+                },
+                formatFailureItem = { formatFailureItem<FeedCardViewModel>(this, it) },
+                formatFailureFullScreen = { formatFailureFullScreen(this, it) },
+                formatFeedItem = { formatFeedItem(this, it) }
+            )
         )
 
         errorRefreshButton.setOnClickListener {
             refreshContainer.isRefreshing = true
-            loadFromScratch()
+            presenter.loadFromScratch()
         }
         setUpFeed()
-        loadFromScratch()
+        presenter.loadFromScratch()
     }
 
     override fun onDestroy() {
@@ -57,32 +57,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun setUpFeed() {
         adapter = FeedAdapter {
-            autoLoad()
+            presenter.autoLoad()
         }
         feed.addItemDecoration(FeedItemDecoration(resources.getDimensionPixelOffset(R.dimen.spaceM)))
         feed.adapter = adapter
 
         refreshContainer.setOnRefreshListener {
-            loadFromScratch()
+            presenter.loadFromScratch()
         }
     }
 
-    private fun loadFromScratch() {
-        GlobalScope.launch(Dispatchers.Main) {
-            refreshContainer.isRefreshing = true
-            adapter.submitList(emptyList())
-            showViewModel(repository.loadFromScratch())
-            refreshContainer.isRefreshing = false
-        }
-    }
-
-    private fun autoLoad() {
-        GlobalScope.launch(Dispatchers.Main) {
-            showViewModel(repository.autoLoad())
-        }
-    }
-
-    private fun showViewModel(viewModel: ListViewModel<FeedItem>) {
+    override fun showViewModel(viewModel: ListViewModel<FeedCardViewModel>) {
         when (viewModel) {
             is ListErrorViewModel -> {
                 errorTitle.text = viewModel.title
@@ -90,11 +75,17 @@ class MainActivity : AppCompatActivity() {
                 dataContainer.showChild(errorView)
             }
             is ListDataViewModel -> {
-                dataContainer.showChild(refreshContainer)
                 adapter.submitList(viewModel.items)
                 feed.addOnScrollListener(PaginationScrollListener(feed.layoutManager as LinearLayoutManager) {
-                    autoLoad()
+                    presenter.autoLoad()
                 })
+                refreshContainer.isRefreshing = false
+                dataContainer.showChild(refreshContainer)
+            }
+            is ListProgressViewModel -> {
+                refreshContainer.isRefreshing = true
+                adapter.submitList(emptyList())
+                dataContainer.showChild(refreshContainer)
             }
         }
     }

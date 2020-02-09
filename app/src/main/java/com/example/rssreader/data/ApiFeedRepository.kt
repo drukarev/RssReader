@@ -15,6 +15,8 @@ import java.io.InputStream
 import java.lang.Exception
 import java.util.concurrent.ConcurrentLinkedQueue
 
+private const val TAG = "Page Repository"
+
 class ApiFeedRepository(
     private val hasInternetConnection: () -> Boolean
 ) : PageRepository<FeedItem> {
@@ -30,12 +32,16 @@ class ApiFeedRepository(
 
     override suspend fun getPage(loadFromScratch: Boolean): Response<Page<FeedItem>> {
         if (!hasInternetConnection()) {
+            Log.d(TAG, "No internet connection")
             return Response.Fail(Failure.NoConnection)
         }
 
         if (loadFromScratch) {
             currentPage = 1
         }
+
+        Log.d(TAG, "Loading page $currentPage")
+
         val client = HttpClient(Android)
 
         val data = ConcurrentLinkedQueue<FeedItem>()
@@ -46,15 +52,17 @@ class ApiFeedRepository(
                         val response = client.get<InputStream>("$url$currentPage")
                         when (val parsedResponse = parseAsRss(response)) {
                             is Response.Result -> data.addAll(parsedResponse.value)
-                            is Response.Fail -> Log.d("ApiFeedRepository", "Parsing failure")
+                            is Response.Fail -> Log.e(TAG, "Parsing failure")
                         }
                     } catch (e: Exception) {
-                        Log.e("ApiFeedRepository", "Request failure", e)
+                        Log.e(TAG, "Request failure", e)
                     }
                 }
             }
         }
         currentPage++
+
+        Log.d(TAG, "Found ${data.size} new items")
 
         return Response.Result(
             Page(data, data.isNotEmpty())

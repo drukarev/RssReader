@@ -1,4 +1,4 @@
-package com.example.rssreader.data
+package com.example.rssreader.view
 
 import android.content.Context
 import com.example.rssreader.R

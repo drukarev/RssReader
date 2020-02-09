@@ -1,10 +1,13 @@
 package com.example.rssreader.data
 
+import android.util.Log
 import com.example.rssreader.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.*
 import kotlin.Comparator
+
+private const val TAG = "Pagination"
 
 /**
  * This repository handles the pagination from provided [PageRepository].
@@ -28,6 +31,7 @@ class SortingPaginationRepository<T : Any>(
      */
     override suspend fun loadFromScratch(): ListViewModel<T> {
         return withContext(Dispatchers.IO) {
+            Log.d(TAG, "Removing previous data and loading from scratch")
             listState = ListState.Start(sortingComparator)
             loadData()
         }
@@ -44,7 +48,8 @@ class SortingPaginationRepository<T : Any>(
     }
 
     private suspend fun loadData(): ListViewModel<T> {
-        return when (listState) {
+        Log.d(TAG, "Started loading data. ListState = ${listState::class.java.simpleName}")
+        val viewModel = when (listState) {
             is ListState.Start -> {
                 loadPage()
             }
@@ -58,6 +63,8 @@ class SortingPaginationRepository<T : Any>(
                 )
             }
         }
+        Log.d(TAG, "Finished loading data. New listState = ${listState::class.java.simpleName}")
+        return viewModel
     }
 
     private suspend fun loadPage(): ListViewModel<T> {
@@ -74,12 +81,14 @@ class SortingPaginationRepository<T : Any>(
                 }
 
                 val viewModel: ListViewModel<T> = if (items.isEmpty()) {
+                    Log.d(TAG, "Loaded successfully, but no items were found. Showing empty state")
                     formatFailureFullScreen(Failure.NoItems)
                 } else {
                     val hasMoreItems = listState is ListState.Middle
                     val viewModels = items.map { formatFeedItem(it) }
                     val itemsWithProgress =
                         if (hasMoreItems) viewModels.plus(ListItemViewModel.Progress) else viewModels
+                    Log.d(TAG, "Loaded successfully. Showing items (hasMoreItems=$hasMoreItems)")
                     ListDataViewModel(
                         items = itemsWithProgress,
                         hasMoreItems = hasMoreItems
@@ -89,10 +98,12 @@ class SortingPaginationRepository<T : Any>(
             }
             is Response.Fail -> {
                 if (items.isEmpty()) {
+                    Log.d(TAG, "Failed to load new items. No cached items. Showing full screen error")
                     formatFailureFullScreen(page.value)
                 } else {
                     val itemsWithError =
                         items.map { formatFeedItem(it) }.toMutableList() + formatFailureItem(page.value)
+                    Log.d(TAG, "Failed to load new items. Showing cached items and an error item")
                     ListDataViewModel(itemsWithError, hasMoreItems = false)
                 }
             }

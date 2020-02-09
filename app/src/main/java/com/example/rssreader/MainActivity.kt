@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rssreader.data.*
 import com.example.rssreader.model.*
 import com.example.rssreader.pagination.*
-import com.example.rssreader.view.FeedItemDecoration
+import com.example.rssreader.view.*
 import com.example.rssreader.view.PaginationScrollListener
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.view_error.*

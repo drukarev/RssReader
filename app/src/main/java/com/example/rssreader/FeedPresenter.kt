@@ -3,7 +3,7 @@ package com.example.rssreader
 import com.example.rssreader.data.PaginationRepository
 import com.example.rssreader.model.FeedCardViewModel
 import com.example.rssreader.model.FeedItem
-import com.example.rssreader.model.ListProgressViewModel
+import com.example.rssreader.model.ListViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -15,7 +15,7 @@ class FeedPresenter(
 
     override fun loadFromScratch() {
         GlobalScope.launch(Dispatchers.Main) {
-            view.showViewModel(ListProgressViewModel())
+            view.showViewModel(ListViewModel.Progress())
             view.showViewModel(repository.loadFromScratch())
         }
     }

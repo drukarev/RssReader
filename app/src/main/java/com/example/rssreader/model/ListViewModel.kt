@@ -1,27 +1,25 @@
 package com.example.rssreader.model
 
-sealed class ListViewModel<T : Any>
+sealed class ListViewModel<T : Any> {
+    data class Error<T : Any>(
+        val title: CharSequence,
+        val subtitle: CharSequence
+    ) : ListViewModel<T>()
 
-//TODO: rename
+    data class Data<T : Any>(
+        val items: List<ListItemViewModel<T>>,
+        val hasMoreItems: Boolean
+    ) : ListViewModel<T>()
 
-data class ListErrorViewModel<T : Any>(
-    val title: CharSequence,
-    val subtitle: CharSequence
-) : ListViewModel<T>()
+    class Progress<T : Any>: ListViewModel<T>() {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+            return true
+        }
 
-data class ListDataViewModel<T : Any>(
-    val items: List<ListItemViewModel<T>>,
-    val hasMoreItems: Boolean
-) : ListViewModel<T>()
-
-class ListProgressViewModel<T : Any>: ListViewModel<T>() {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return javaClass.hashCode()
+        override fun hashCode(): Int {
+            return javaClass.hashCode()
+        }
     }
 }

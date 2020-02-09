@@ -69,12 +69,12 @@ class MainActivity : AppCompatActivity(), FeedContract.View {
 
     override fun showViewModel(viewModel: ListViewModel<FeedCardViewModel>) {
         when (viewModel) {
-            is ListErrorViewModel -> {
+            is ListViewModel.Error -> {
                 errorTitle.text = viewModel.title
                 errorSubtitle.text = viewModel.subtitle
                 dataContainer.showChild(errorView)
             }
-            is ListDataViewModel -> {
+            is ListViewModel.Data -> {
                 adapter.submitList(viewModel.items)
                 feed.addOnScrollListener(PaginationScrollListener(feed.layoutManager as LinearLayoutManager) {
                     presenter.autoLoad()
@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity(), FeedContract.View {
                 refreshContainer.isRefreshing = false
                 dataContainer.showChild(refreshContainer)
             }
-            is ListProgressViewModel -> {
+            is ListViewModel.Progress -> {
                 refreshContainer.isRefreshing = true
                 adapter.submitList(emptyList())
                 dataContainer.showChild(refreshContainer)

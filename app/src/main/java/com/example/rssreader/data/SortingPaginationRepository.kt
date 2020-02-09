@@ -15,11 +15,11 @@ private const val TAG = "Pagination"
  * Since [PageRepository] doesn't guarantee an order of it's data, elements from the new pages can appear anywhere in the list.
  * Elements are sorted according to the [sortingComparator].
  */
-class SortingPaginationRepository<T : Any, R: Any>(
+class SortingPaginationRepository<T : Any, R : Any>(
     private val repository: PageRepository<T>,
     private val sortingComparator: Comparator<T>,
     private val formatFailureItem: (Failure) -> ListItemViewModel.Error<R>,
-    private val formatFailureFullScreen: (Failure) -> ListErrorViewModel<R>,
+    private val formatFailureFullScreen: (Failure) -> ListViewModel.Error<R>,
     private val formatFeedItem: (item: T) -> ListItemViewModel.Data<R>
 ) : PaginationRepository<T, R> {
 
@@ -57,7 +57,7 @@ class SortingPaginationRepository<T : Any, R: Any>(
                 loadPage()
             }
             is ListState.End -> {
-                ListDataViewModel(
+                ListViewModel.Data(
                     items = (listState.loadedItems.map { formatFeedItem(it) }),
                     hasMoreItems = false
                 )
@@ -89,7 +89,7 @@ class SortingPaginationRepository<T : Any, R: Any>(
                     val itemsWithProgress =
                         if (hasMoreItems) viewModels.plus(ListItemViewModel.Progress<R>()) else viewModels
                     Log.d(TAG, "Loaded successfully. Showing items (hasMoreItems=$hasMoreItems)")
-                    ListDataViewModel(
+                    ListViewModel.Data(
                         items = itemsWithProgress,
                         hasMoreItems = hasMoreItems
                     )
@@ -104,7 +104,7 @@ class SortingPaginationRepository<T : Any, R: Any>(
                     val itemsWithError =
                         items.map { formatFeedItem(it) }.toMutableList() + formatFailureItem(page.value)
                     Log.d(TAG, "Failed to load new items. Showing cached items and an error item")
-                    ListDataViewModel(itemsWithError, hasMoreItems = false)
+                    ListViewModel.Data(itemsWithError, hasMoreItems = false)
                 }
             }
         }

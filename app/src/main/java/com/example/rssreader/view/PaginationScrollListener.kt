@@ -17,8 +17,8 @@ internal class PaginationScrollListener(
         val lastVisiblePosition = layoutManager.findLastVisibleItemPosition()
         val totalItemCount = layoutManager.itemCount
         if (totalItemCount - lastVisiblePosition < threshold) {
+            recyclerView.clearOnScrollListeners()
             loadNextPage()
-            recyclerView.removeOnScrollListener(this)
         }
     }
 }

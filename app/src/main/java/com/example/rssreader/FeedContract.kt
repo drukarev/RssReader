@@ -8,6 +8,7 @@ interface FeedContract {
     interface Presenter {
         fun loadFromScratch()
         fun autoLoad()
+        fun detach()
     }
 
     interface View {

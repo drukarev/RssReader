@@ -9,11 +9,9 @@ import com.example.rssreader.parser.parseAsRss
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.request.get
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import java.io.InputStream
 import java.lang.Exception
-import java.util.concurrent.ConcurrentLinkedQueue
 
 private const val TAG = "Page Repository"
 
@@ -44,28 +42,31 @@ class ApiFeedRepository(
 
         val client = HttpClient(Android)
 
-        val data = ConcurrentLinkedQueue<FeedItem>()
-        runBlocking {
-            feeds.forEach { url ->
-                launch {
-                    try {
-                        val response = client.get<InputStream>("$url$currentPage")
-                        when (val parsedResponse = parseAsRss(response)) {
-                            is Response.Result -> data.addAll(parsedResponse.value)
-                            is Response.Fail -> Log.e(TAG, "Parsing failure")
+        val deferredFeeds = feeds.map { url ->
+            GlobalScope.async(Dispatchers.IO) {
+                try {
+                    val response = client.get<InputStream>("$url$currentPage")
+                    when (val parsedResponse = parseAsRss(response)) {
+                        is Response.Result -> return@async parsedResponse.value
+                        is Response.Fail -> {
+                            Log.d(TAG, "Parsing failure")
+                            emptyList<FeedItem>()
                         }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Request failure", e)
                     }
+                } catch (e: Exception) {
+                    Log.d(TAG, "Request failure", e)
+                    emptyList<FeedItem>()
                 }
             }
         }
+        val items = deferredFeeds.awaitAll().flatten()
+
         currentPage++
 
-        Log.d(TAG, "Found ${data.size} new items")
+        Log.d(TAG, "Found ${items.size} new items")
 
         return Response.Result(
-            Page(data, data.isNotEmpty())
+            Page(items, items.isNotEmpty())
         )
     }
 }

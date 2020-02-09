@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity(), FeedContract.View {
 
     override fun onDestroy() {
         refreshContainer.setOnRefreshListener(null)
+        presenter.detach()
         super.onDestroy()
     }
 
@@ -41,6 +42,7 @@ class MainActivity : AppCompatActivity(), FeedContract.View {
             }
             is ScreenViewModel.Data -> {
                 adapter.submitList(viewModel.items)
+                feed.clearOnScrollListeners()
                 feed.addOnScrollListener(PaginationScrollListener(feed.layoutManager as LinearLayoutManager) {
                     presenter.autoLoad()
                 })
@@ -49,7 +51,7 @@ class MainActivity : AppCompatActivity(), FeedContract.View {
             }
             is ScreenViewModel.Progress -> {
                 refreshContainer.isRefreshing = true
-                adapter.submitList(emptyList())
+                feed.clearOnScrollListeners()
                 dataContainer.showChild(refreshContainer)
             }
         }

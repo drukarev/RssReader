@@ -43,6 +43,7 @@ class SortingPaginationRepository<T : Any, R : Any>(
      */
     override suspend fun autoLoad(): ScreenViewModel<R> {
         return withContext(Dispatchers.IO) {
+            Log.d(TAG, "Loading next page")
             loadData()
         }
     }

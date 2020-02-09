@@ -8,7 +8,6 @@ import android.view.View
 import android.widget.ViewAnimator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.SortedList
 import com.example.rssreader.data.*
 import com.example.rssreader.model.*
 import com.example.rssreader.pagination.*
@@ -19,12 +18,11 @@ import kotlinx.android.synthetic.main.view_error.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.threeten.bp.format.DateTimeFormatter
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var adapter: FeedAdapter
-    private lateinit var repository: PaginationListRepository<FeedItem>
+    private lateinit var repository: PaginationRepository<FeedItem>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

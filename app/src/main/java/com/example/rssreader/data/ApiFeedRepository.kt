@@ -8,7 +8,6 @@ import com.example.rssreader.model.Response
 import com.example.rssreader.parser.parseAsRss
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
-import io.ktor.client.features.HttpResponseValidator
 import io.ktor.client.request.get
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -18,7 +17,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 class ApiFeedRepository(
     private val hasInternetConnection: () -> Boolean
-) : ListRepository<FeedItem> {
+) : PageRepository<FeedItem> {
 
     private val feeds = listOf(
         "https://blog.us.playstation.com/feed/?paged=",

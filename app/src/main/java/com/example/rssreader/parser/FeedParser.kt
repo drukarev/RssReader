@@ -28,5 +28,5 @@ fun parseAsRss(inputStream: InputStream): Response<List<FeedItem>> {
 }
 
 private fun logParsingFailure(e: Exception) {
-    Log.d("LogParsingFailure:", "Failed to parse rss", e)
+    Log.d("LogParsingFailure", "Failed to parse rss", e)
 }

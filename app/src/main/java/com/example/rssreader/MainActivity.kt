@@ -46,9 +46,11 @@ class MainActivity : AppCompatActivity(), FeedContract.View {
             is ScreenViewModel.Data -> {
                 feed.clearOnScrollListeners()
                 adapter.submitList(viewModel.items)
-                feed.addOnScrollListener(PaginationScrollListener(feed.layoutManager as LinearLayoutManager) {
-                    presenter.autoLoad()
-                })
+                if (viewModel.hasMoreItems) {
+                    feed.addOnScrollListener(PaginationScrollListener(feed.layoutManager as LinearLayoutManager) {
+                        presenter.autoLoad()
+                    })
+                }
                 refreshContainer.isRefreshing = false
                 dataContainer.showChild(refreshContainer)
             }

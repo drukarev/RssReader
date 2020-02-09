@@ -13,7 +13,8 @@ sealed class ScreenViewModel<T : Any> {
     ) : ScreenViewModel<T>()
 
     data class Data<T : Any>(
-        val items: List<PaginationItemViewModel<T>>
+        val items: List<PaginationItemViewModel<T>>,
+        val hasMoreItems: Boolean
     ) : ScreenViewModel<T>()
 
     class Progress<T : Any> : ScreenViewModel<T>() {

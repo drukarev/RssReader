@@ -8,6 +8,7 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.ProgressBar
 import com.example.rssreader.R
+import com.example.rssreader.view.ErrorCardView
 import com.example.rssreader.view.FeedCardView
 
 /**
@@ -23,7 +24,7 @@ sealed class ListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
         }
     })
 
-    class Error(context: Context) : ListViewHolder(FeedCardView(context).apply { //TODO: change view
+    class Error(context: Context) : ListViewHolder(ErrorCardView(context).apply {
         layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
     })
 

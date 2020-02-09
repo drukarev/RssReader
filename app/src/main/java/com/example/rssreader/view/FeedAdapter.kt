@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.rssreader.R
 import com.example.rssreader.model.*
 import com.example.rssreader.view.FeedCardDiffCallback
+import kotlinx.android.synthetic.main.item_error_card.view.*
 import kotlinx.android.synthetic.main.item_feed_card.view.*
 
 class FeedAdapter(
@@ -22,9 +23,7 @@ class FeedAdapter(
         when (ItemViewType.values()[itemViewType]) {
             ItemViewType.DATA -> ListViewHolder.Data(parent.context)
             ItemViewType.PROGRESS -> ListViewHolder.Progress(parent.context)
-            ItemViewType.ERROR -> ListViewHolder.Error(parent.context).apply {
-                itemView.setOnClickListener { onReloadClick() }
-            }
+            ItemViewType.ERROR -> ListViewHolder.Error(parent.context)
         }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -39,10 +38,11 @@ class FeedAdapter(
             }
             is PaginationItemViewModel.Error -> {
                 holder.itemView.apply {
-                    title.text = item.errorText
-                    author.text = context.getString(R.string.button_reload)
-                    date.text = "---"
-                    sourceFeedName.text = "---"
+                    errorMessage.text = item.errorText
+                    errorButton.text = context.getString(R.string.button_reload)
+                    errorButton.setOnClickListener {
+                        onReloadClick()
+                    }
                 }
             }
         }

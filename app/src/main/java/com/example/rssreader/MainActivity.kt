@@ -38,7 +38,9 @@ class MainActivity : AppCompatActivity(), FeedContract.View {
             is ScreenViewModel.Error -> {
                 errorTitle.text = viewModel.title
                 errorSubtitle.text = viewModel.subtitle
+                refreshContainer.isRefreshing = false
                 dataContainer.showChild(errorView)
+                adapter.submitList(emptyList())
             }
             is ScreenViewModel.Data -> {
                 adapter.submitList(viewModel.items)

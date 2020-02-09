@@ -21,10 +21,10 @@ class ApiFeedRepository(
 ) : PageRepository<FeedItem> {
 
     private val feeds = listOf(
-        SourceFeed("https://blog.us.playstation.com/feed/?paged="),
-        SourceFeed("https://blog.mozilla.org/feed/?paged="),
-        SourceFeed("https://blogs.windows.com/feed/?paged="),
-        SourceFeed("https://blog.jetbrains.com/feed/?paged=")
+        "https://blog.us.playstation.com/feed/?paged=",
+        "https://blog.mozilla.org/feed/?paged=",
+        "https://blogs.windows.com/feed/?paged=",
+        "https://blog.jetbrains.com/feed/?paged="
     )
 
     private var currentPage = 1
@@ -37,32 +37,27 @@ class ApiFeedRepository(
 
         if (loadFromScratch) {
             currentPage = 1
-            feeds.forEach { it.hasMorePages = true }
         }
 
         Log.d(TAG, "Loading page $currentPage")
 
-        val deferredFeeds = feeds.filter { it.hasMorePages }
-            .map { sourceFeed ->
-                GlobalScope.async(Dispatchers.IO) {
-                    try {
-                        Log.d(TAG, "Loading feed ${sourceFeed.url}")
-                        val response = httpClient.get<InputStream>("${sourceFeed.url}$currentPage")
-                        when (val parsedResponse = parseAsRss(response)) {
-                            is Response.Result -> parsedResponse.value
-                            is Response.Fail -> {
-                                Log.d(TAG, "Parsing failure. Removing ${sourceFeed.url} from list of feeds")
-                                sourceFeed.hasMorePages = false
-                                emptyList()
-                            }
+        val deferredFeeds = feeds.map { url ->
+            GlobalScope.async(Dispatchers.IO) {
+                try {
+                    val response = httpClient.get<InputStream>("$url$currentPage")
+                    when (val parsedResponse = parseAsRss(response)) {
+                        is Response.Result -> parsedResponse.value
+                        is Response.Fail -> {
+                            Log.d(TAG, "Parsing failure")
+                            emptyList<FeedItem>()
                         }
-                    } catch (e: Exception) {
-                        Log.d(TAG, "Request failure. Removing ${sourceFeed.url} from list of feeds", e)
-                        sourceFeed.hasMorePages = false
-                        emptyList<FeedItem>()
                     }
+                } catch (e: Exception) {
+                    Log.d(TAG, "Request failure", e)
+                    emptyList<FeedItem>()
                 }
             }
+        }
         val items = deferredFeeds.awaitAll().flatten()
 
         currentPage++
@@ -73,9 +68,4 @@ class ApiFeedRepository(
             Page(items, items.isNotEmpty())
         )
     }
-
-    private data class SourceFeed(
-        val url: String,
-        var hasMorePages: Boolean = true
-    )
 }

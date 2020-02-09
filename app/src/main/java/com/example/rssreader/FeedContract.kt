@@ -1,7 +1,7 @@
 package com.example.rssreader
 
 import com.example.rssreader.model.FeedCardViewModel
-import com.example.rssreader.model.ListViewModel
+import com.example.rssreader.model.ScreenViewModel
 
 interface FeedContract {
 
@@ -11,6 +11,6 @@ interface FeedContract {
     }
 
     interface View {
-        fun showViewModel(viewModel: ListViewModel<FeedCardViewModel>)
+        fun showViewModel(viewModel: ScreenViewModel<FeedCardViewModel>)
     }
 }

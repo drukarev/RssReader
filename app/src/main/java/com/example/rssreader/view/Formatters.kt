@@ -9,10 +9,10 @@ import org.threeten.bp.OffsetDateTime
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
 
-private const val DATE_PATTERN = "YYYY.MM.dd, HH:mm"
+private const val DATE_PATTERN = "dd MMM YYYY, HH:mm"
 
-fun <T : Any> formatFeedItem(context: Context, item: FeedItem): ListItemViewModel.Data<T> {
-    return ListItemViewModel.Data(
+fun formatFeedItem(context: Context, item: FeedItem): PaginationItemViewModel.Data<FeedCardViewModel> {
+    return PaginationItemViewModel.Data(
         FeedCardViewModel(
             id = item.id,
             title = item.title ?: context.getString(R.string.feed_item_no_title),
@@ -23,12 +23,12 @@ fun <T : Any> formatFeedItem(context: Context, item: FeedItem): ListItemViewMode
     )
 }
 
-fun <T : Any> formatFailureItem(context: Context, failure: Failure): ListItemViewModel.Error<T> {
-    return ListItemViewModel.Error(failure.getText(context))
+fun <T : Any> formatFailureItem(context: Context, failure: Failure): PaginationItemViewModel.Error<T> {
+    return PaginationItemViewModel.Error(failure.getText(context))
 }
 
-fun <T : Any> formatFailureFullScreen(context: Context, failure: Failure): ListViewModel.Error<T> {
-    return ListViewModel.Error(failure.getText(context), context.getString(R.string.error_subtitle_retry))
+fun <T : Any> formatFailureFullScreen(context: Context, failure: Failure): ScreenViewModel.Error<T> {
+    return ScreenViewModel.Error(failure.getText(context), context.getString(R.string.error_subtitle_retry))
 }
 
 private fun Failure.getText(context: Context): String {

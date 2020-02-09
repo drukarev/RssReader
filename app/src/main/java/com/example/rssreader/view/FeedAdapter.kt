@@ -10,12 +10,12 @@ import kotlinx.android.synthetic.main.item_feed_card.view.*
 
 class FeedAdapter(
     private val onReloadClick: () -> Unit
-) : ListAdapter<ListItemViewModel<FeedCardViewModel>, RecyclerView.ViewHolder>(FeedCardDiffCallback()) {
+) : ListAdapter<PaginationItemViewModel<FeedCardViewModel>, RecyclerView.ViewHolder>(FeedCardDiffCallback()) {
 
     override fun getItemViewType(position: Int): Int = when (getItem(position)) {
-        is ListItemViewModel.Data -> ItemViewType.DATA.ordinal
-        is ListItemViewModel.Progress -> ItemViewType.PROGRESS.ordinal
-        is ListItemViewModel.Error -> ItemViewType.ERROR.ordinal
+        is PaginationItemViewModel.Data -> ItemViewType.DATA.id
+        is PaginationItemViewModel.Progress -> ItemViewType.PROGRESS.id
+        is PaginationItemViewModel.Error -> ItemViewType.ERROR.id
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, itemViewType: Int): ListViewHolder =
@@ -29,7 +29,7 @@ class FeedAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = getItem(position)) {
-            is ListItemViewModel.Data -> {
+            is PaginationItemViewModel.Data -> {
                 holder.itemView.apply {
                     title.text = item.data.title
                     author.text = item.data.author
@@ -37,7 +37,7 @@ class FeedAdapter(
                     sourceFeedName.text = item.data.sourceFeedName
                 }
             }
-            is ListItemViewModel.Error -> {
+            is PaginationItemViewModel.Error -> {
                 holder.itemView.apply {
                     title.text = item.errorText
                     author.text = context.getString(R.string.button_reload)
@@ -48,9 +48,9 @@ class FeedAdapter(
         }
     }
 
-    enum class ItemViewType {
-        DATA,
-        ERROR,
-        PROGRESS,
+    enum class ItemViewType(val id: Int) {
+        DATA(0),
+        ERROR(1),
+        PROGRESS(2),
     }
 }

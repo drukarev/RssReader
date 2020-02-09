@@ -18,21 +18,21 @@ private const val TAG = "Pagination"
 class SortingPaginationRepository<T : Any, R : Any>(
     private val repository: PageRepository<T>,
     private val sortingComparator: Comparator<T>,
-    private val formatFailureItem: (Failure) -> ListItemViewModel.Error<R>,
-    private val formatFailureFullScreen: (Failure) -> ListViewModel.Error<R>,
-    private val formatFeedItem: (item: T) -> ListItemViewModel.Data<R>
+    private val formatFailureItem: (Failure) -> PaginationItemViewModel.Error<R>,
+    private val formatFailureFullScreen: (Failure) -> ScreenViewModel.Error<R>,
+    private val formatFeedItem: (item: T) -> PaginationItemViewModel.Data<R>
 ) : PaginationRepository<T, R> {
 
-    private var listState: ListState<T> = ListState.Start(sortingComparator)
+    private var state: State<T> = State.Start(sortingComparator)
 
     /**
      * Removes all stored data and returns first page.
      * All items are sorted according to the [sortingComparator].
      */
-    override suspend fun loadFromScratch(): ListViewModel<R> {
+    override suspend fun loadFromScratch(): ScreenViewModel<R> {
         return withContext(Dispatchers.IO) {
             Log.d(TAG, "Removing previous data and loading from scratch")
-            listState = ListState.Start(sortingComparator)
+            state = State.Start(sortingComparator)
             loadData()
         }
     }
@@ -41,55 +41,55 @@ class SortingPaginationRepository<T : Any, R : Any>(
      * Returns all previous items + next page.
      * All items are sorted according to the [sortingComparator].
      */
-    override suspend fun autoLoad(): ListViewModel<R> {
+    override suspend fun autoLoad(): ScreenViewModel<R> {
         return withContext(Dispatchers.IO) {
             loadData()
         }
     }
 
-    private suspend fun loadData(): ListViewModel<R> {
-        Log.d(TAG, "Started loading data. ListState = ${listState::class.java.simpleName}")
-        val viewModel = when (listState) {
-            is ListState.Start -> {
+    private suspend fun loadData(): ScreenViewModel<R> {
+        Log.d(TAG, "Started loading data. State = ${state::class.java.simpleName}")
+        val viewModel = when (state) {
+            is State.Start -> {
                 loadPage()
             }
-            is ListState.Middle -> {
+            is State.Middle -> {
                 loadPage()
             }
-            is ListState.End -> {
-                ListViewModel.Data(
-                    items = (listState.loadedItems.map { formatFeedItem(it) }),
+            is State.End -> {
+                ScreenViewModel.Data(
+                    items = (state.loadedItems.map { formatFeedItem(it) }),
                     hasMoreItems = false
                 )
             }
         }
-        Log.d(TAG, "Finished loading data. New listState = ${listState::class.java.simpleName}")
+        Log.d(TAG, "Finished loading data. New state = ${state::class.java.simpleName}")
         return viewModel
     }
 
-    private suspend fun loadPage(): ListViewModel<R> {
-        val items: TreeSet<T> = listState.loadedItems
+    private suspend fun loadPage(): ScreenViewModel<R> {
+        val items: TreeSet<T> = state.loadedItems
 
-        return when (val page = repository.getPage(loadFromScratch = listState is ListState.Start)) {
+        return when (val page = repository.getPage(loadFromScratch = state is State.Start)) {
             is Response.Result -> {
                 items.addAll(page.value.data)
 
-                listState = if (page.value.hasMoreItems) {
-                    ListState.Middle(items)
+                state = if (page.value.hasMoreItems) {
+                    State.Middle(items)
                 } else {
-                    ListState.End(items)
+                    State.End(items)
                 }
 
-                val viewModel: ListViewModel<R> = if (items.isEmpty()) {
+                val viewModel: ScreenViewModel<R> = if (items.isEmpty()) {
                     Log.d(TAG, "Loaded successfully, but no items were found. Showing empty state")
                     formatFailureFullScreen(Failure.NoItems)
                 } else {
-                    val hasMoreItems = listState is ListState.Middle
+                    val hasMoreItems = state is State.Middle
                     val viewModels = items.map { formatFeedItem(it) }
                     val itemsWithProgress =
-                        if (hasMoreItems) viewModels.plus(ListItemViewModel.Progress<R>()) else viewModels
+                        if (hasMoreItems) viewModels.plus(PaginationItemViewModel.Progress<R>()) else viewModels
                     Log.d(TAG, "Loaded successfully. Showing items (hasMoreItems=$hasMoreItems)")
-                    ListViewModel.Data(
+                    ScreenViewModel.Data(
                         items = itemsWithProgress,
                         hasMoreItems = hasMoreItems
                     )
@@ -104,39 +104,40 @@ class SortingPaginationRepository<T : Any, R : Any>(
                     val itemsWithError =
                         items.map { formatFeedItem(it) }.toMutableList() + formatFailureItem(page.value)
                     Log.d(TAG, "Failed to load new items. Showing cached items and an error item")
-                    ListViewModel.Data(itemsWithError, hasMoreItems = false)
+                    ScreenViewModel.Data(itemsWithError, hasMoreItems = false)
                 }
             }
         }
     }
-}
-
-/**
- * State of the pagination list
- */
-sealed class ListState<T> {
-    abstract val loadedItems: TreeSet<T>
 
     /**
-     * No items are loaded
+     * State of the pagination
      */
-    class Start<T>(
-        sortingComparator: Comparator<T>
-    ) : ListState<T>() {
-        override val loadedItems: TreeSet<T> = TreeSet(sortingComparator)
+    private sealed class State<T> {
+        abstract val loadedItems: TreeSet<T>
+
+        /**
+         * No items are loaded
+         */
+        class Start<T>(
+            sortingComparator: Comparator<T>
+        ) : State<T>() {
+            override val loadedItems: TreeSet<T> = TreeSet(sortingComparator)
+        }
+
+        /**
+         * Some items are loaded, there is next page
+         */
+        data class Middle<T>(
+            override val loadedItems: TreeSet<T>
+        ) : State<T>()
+
+        /**
+         * All items are loaded, there is no next page
+         */
+        data class End<T>(
+            override val loadedItems: TreeSet<T>
+        ) : State<T>()
     }
 
-    /**
-     * Some items are loaded, there is next page
-     */
-    data class Middle<T>(
-        override val loadedItems: TreeSet<T>
-    ) : ListState<T>()
-
-    /**
-     * All items are loaded, there is no next page
-     */
-    data class End<T>(
-        override val loadedItems: TreeSet<T>
-    ) : ListState<T>()
 }

@@ -1,6 +1,6 @@
 package com.example.rssreader.data
 
-import com.example.rssreader.model.ListViewModel
+import com.example.rssreader.model.ScreenViewModel
 
 /**
  * Repository for handling the pagination from the data source.
@@ -10,9 +10,9 @@ interface PaginationRepository<T: Any, R: Any> {
     /**
      * Removes all stored data and returns first page.
      */
-    suspend fun loadFromScratch(): ListViewModel<R>
+    suspend fun loadFromScratch(): ScreenViewModel<R>
     /**
      * Returns all previous items + next page.
      */
-    suspend fun autoLoad(): ListViewModel<R>
+    suspend fun autoLoad(): ScreenViewModel<R>
 }

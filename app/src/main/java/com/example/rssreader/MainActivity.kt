@@ -1,18 +1,16 @@
 package com.example.rssreader
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import android.os.Bundle
-import android.view.View
-import android.widget.ViewAnimator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.rssreader.data.*
-import com.example.rssreader.model.*
-import com.example.rssreader.pagination.*
+import com.example.rssreader.data.ApiFeedRepository
+import com.example.rssreader.data.SortingPaginationRepository
+import com.example.rssreader.model.FeedCardViewModel
+import com.example.rssreader.model.ScreenViewModel
+import com.example.rssreader.pagination.FeedAdapter
+import com.example.rssreader.utils.hasInternetConnection
+import com.example.rssreader.utils.showChild
 import com.example.rssreader.view.*
-import com.example.rssreader.view.PaginationScrollListener
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.view_error.*
 
@@ -24,7 +22,56 @@ class MainActivity : AppCompatActivity(), FeedContract.View {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setUpPresenter()
+        setUpFeed()
+        presenter.loadFromScratch()
+    }
 
+    override fun onDestroy() {
+        refreshContainer.setOnRefreshListener(null)
+        super.onDestroy()
+    }
+
+    override fun showViewModel(viewModel: ScreenViewModel<FeedCardViewModel>) {
+        when (viewModel) {
+            is ScreenViewModel.Error -> {
+                errorTitle.text = viewModel.title
+                errorSubtitle.text = viewModel.subtitle
+                dataContainer.showChild(errorView)
+            }
+            is ScreenViewModel.Data -> {
+                adapter.submitList(viewModel.items)
+                feed.addOnScrollListener(PaginationScrollListener(feed.layoutManager as LinearLayoutManager) {
+                    presenter.autoLoad()
+                })
+                refreshContainer.isRefreshing = false
+                dataContainer.showChild(refreshContainer)
+            }
+            is ScreenViewModel.Progress -> {
+                refreshContainer.isRefreshing = true
+                adapter.submitList(emptyList())
+                dataContainer.showChild(refreshContainer)
+            }
+        }
+    }
+
+    private fun setUpFeed() {
+        adapter = FeedAdapter {
+            presenter.autoLoad()
+        }
+        feed.addItemDecoration(FeedItemDecoration(resources.getDimensionPixelOffset(R.dimen.spaceM)))
+        feed.adapter = adapter
+
+        refreshContainer.setOnRefreshListener {
+            presenter.loadFromScratch()
+        }
+        errorRefreshButton.setOnClickListener {
+            refreshContainer.isRefreshing = true
+            presenter.loadFromScratch()
+        }
+    }
+
+    private fun setUpPresenter() {
         presenter = FeedPresenter(
             view = this,
             repository = SortingPaginationRepository(
@@ -41,66 +88,5 @@ class MainActivity : AppCompatActivity(), FeedContract.View {
                 formatFeedItem = { formatFeedItem(this, it) }
             )
         )
-
-        errorRefreshButton.setOnClickListener {
-            refreshContainer.isRefreshing = true
-            presenter.loadFromScratch()
-        }
-        setUpFeed()
-        presenter.loadFromScratch()
-    }
-
-    override fun onDestroy() {
-        refreshContainer.setOnRefreshListener(null)
-        super.onDestroy()
-    }
-
-    private fun setUpFeed() {
-        adapter = FeedAdapter {
-            presenter.autoLoad()
-        }
-        feed.addItemDecoration(FeedItemDecoration(resources.getDimensionPixelOffset(R.dimen.spaceM)))
-        feed.adapter = adapter
-
-        refreshContainer.setOnRefreshListener {
-            presenter.loadFromScratch()
-        }
-    }
-
-    override fun showViewModel(viewModel: ListViewModel<FeedCardViewModel>) {
-        when (viewModel) {
-            is ListViewModel.Error -> {
-                errorTitle.text = viewModel.title
-                errorSubtitle.text = viewModel.subtitle
-                dataContainer.showChild(errorView)
-            }
-            is ListViewModel.Data -> {
-                adapter.submitList(viewModel.items)
-                feed.addOnScrollListener(PaginationScrollListener(feed.layoutManager as LinearLayoutManager) {
-                    presenter.autoLoad()
-                })
-                refreshContainer.isRefreshing = false
-                dataContainer.showChild(refreshContainer)
-            }
-            is ListViewModel.Progress -> {
-                refreshContainer.isRefreshing = true
-                adapter.submitList(emptyList())
-                dataContainer.showChild(refreshContainer)
-            }
-        }
-    }
-
-    private fun ViewAnimator.showChild(view: View) {
-        indexOfChild(view).also { indexOfChild ->
-            if (displayedChild != indexOfChild) {
-                displayedChild = indexOfChild
-            }
-        }
-    }
-
-    private fun hasInternetConnection(context: Context): Boolean {
-        val cm: ConnectivityManager? = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork: NetworkInfo? = cm?.activeNetworkInfo
-        return activeNetwork?.isConnectedOrConnecting ?: false
     }
 }

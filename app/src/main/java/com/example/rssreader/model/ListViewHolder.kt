@@ -10,6 +10,9 @@ import android.widget.ProgressBar
 import com.example.rssreader.R
 import com.example.rssreader.view.FeedCardView
 
+/**
+ * View holder for progress, error or data items in the [FeedAdapter]
+ */
 sealed class ListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     class Progress(context: Context) : ListViewHolder(ProgressBar(context).apply {

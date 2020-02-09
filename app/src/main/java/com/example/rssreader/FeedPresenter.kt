@@ -12,14 +12,14 @@ class FeedPresenter(
 ) : FeedContract.Presenter, CoroutineScope by MainScope() {
 
     override fun loadFromScratch() {
-        GlobalScope.launch(Dispatchers.Main) {
+        launch(Dispatchers.Main) {
             view?.showViewModel(ScreenViewModel.Progress())
             view?.showViewModel(repository.loadFromScratch())
         }
     }
 
     override fun autoLoad() {
-        GlobalScope.launch(Dispatchers.Main) {
+        launch(Dispatchers.Main) {
             view?.showViewModel(repository.autoLoad())
         }
     }

@@ -51,17 +51,11 @@ class SortingPaginationRepository<T : Any, R : Any>(
     private suspend fun loadData(): ScreenViewModel<R> {
         Log.d(TAG, "Started loading data. State = ${state::class.java.simpleName}")
         val viewModel = when (state) {
-            is State.Start -> {
-                loadPage()
-            }
-            is State.Middle -> {
+            is State.Start, is State.Middle -> {
                 loadPage()
             }
             is State.End -> {
-                ScreenViewModel.Data(
-                    items = (state.loadedItems.map { formatFeedItem(it) }),
-                    hasMoreItems = false
-                )
+                ScreenViewModel.Data(state.loadedItems.map { formatFeedItem(it) })
             }
         }
         Log.d(TAG, "Finished loading data. New state = ${state::class.java.simpleName}")
@@ -81,21 +75,18 @@ class SortingPaginationRepository<T : Any, R : Any>(
                     State.End(items)
                 }
 
-                val viewModel: ScreenViewModel<R> = if (items.isEmpty()) {
+                if (items.isEmpty()) {
                     Log.d(TAG, "Loaded successfully, but no items were found. Showing empty state")
                     formatFailureFullScreen(Failure.NoItems)
                 } else {
                     val hasMoreItems = state is State.Middle
                     val viewModels = items.map { formatFeedItem(it) }
-                    val itemsWithProgress =
+                    val viewModelsWithProgress =
                         if (hasMoreItems) viewModels.plus(PaginationItemViewModel.Progress<R>()) else viewModels
+
                     Log.d(TAG, "Loaded successfully. Showing items (hasMoreItems=$hasMoreItems)")
-                    ScreenViewModel.Data(
-                        items = itemsWithProgress,
-                        hasMoreItems = hasMoreItems
-                    )
+                    ScreenViewModel.Data(items = viewModelsWithProgress)
                 }
-                viewModel
             }
             is Response.Fail -> {
                 if (items.isEmpty()) {
@@ -105,7 +96,7 @@ class SortingPaginationRepository<T : Any, R : Any>(
                     val itemsWithError =
                         items.map { formatFeedItem(it) }.toMutableList() + formatFailureItem(page.value)
                     Log.d(TAG, "Failed to load new items. Showing cached items and an error item")
-                    ScreenViewModel.Data(itemsWithError, hasMoreItems = false)
+                    ScreenViewModel.Data(itemsWithError)
                 }
             }
         }
@@ -140,5 +131,4 @@ class SortingPaginationRepository<T : Any, R : Any>(
             override val loadedItems: TreeSet<T>
         ) : State<T>()
     }
-
 }

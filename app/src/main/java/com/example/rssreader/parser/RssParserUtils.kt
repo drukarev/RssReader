@@ -88,7 +88,9 @@ fun XmlPullParser.readText(): String {
 
 @Throws(XmlPullParserException::class, IOException::class)
 fun XmlPullParser.skip() {
-    check(eventType == XmlPullParser.START_TAG)
+    if (eventType != XmlPullParser.START_TAG) {
+        throw XmlPullParserException("Error in skip() - eventType != XmlPullParser.START_TAG")
+    }
     var depth = 1
     while (depth != 0) {
         when (next()) {

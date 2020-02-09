@@ -3,7 +3,7 @@ package com.example.rssreader.view
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-private const val THRESHOLD_DEFAULT = 50
+private const val THRESHOLD_DEFAULT = 30
 
 internal class PaginationScrollListener(
     private val layoutManager: LinearLayoutManager,

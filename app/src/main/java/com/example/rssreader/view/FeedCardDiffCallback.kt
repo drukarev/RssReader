@@ -1,5 +1,6 @@
 package com.example.rssreader.view
 
+import android.annotation.SuppressLint
 import androidx.recyclerview.widget.DiffUtil
 import com.example.rssreader.model.FeedCardViewModel
 import com.example.rssreader.model.PaginationItemViewModel
@@ -18,6 +19,7 @@ class FeedCardDiffCallback : DiffUtil.ItemCallback<PaginationItemViewModel<FeedC
         }
     }
 
+    @SuppressLint("DiffUtilEquals")
     override fun areContentsTheSame(
         oldItem: PaginationItemViewModel<FeedCardViewModel>,
         newItem: PaginationItemViewModel<FeedCardViewModel>

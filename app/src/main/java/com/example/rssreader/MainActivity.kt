@@ -5,12 +5,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rssreader.data.ApiFeedRepository
 import com.example.rssreader.data.SortingPaginationRepository
+import com.example.rssreader.data.getSortByDataComparator
 import com.example.rssreader.model.FeedCardViewModel
 import com.example.rssreader.model.ScreenViewModel
 import com.example.rssreader.pagination.FeedAdapter
 import com.example.rssreader.utils.hasInternetConnection
 import com.example.rssreader.utils.showChild
 import com.example.rssreader.view.*
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.android.Android
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.view_error.*
 
@@ -43,8 +46,8 @@ class MainActivity : AppCompatActivity(), FeedContract.View {
                 adapter.submitList(emptyList())
             }
             is ScreenViewModel.Data -> {
-                adapter.submitList(viewModel.items)
                 feed.clearOnScrollListeners()
+                adapter.submitList(viewModel.items)
                 feed.addOnScrollListener(PaginationScrollListener(feed.layoutManager as LinearLayoutManager) {
                     presenter.autoLoad()
                 })
@@ -60,9 +63,7 @@ class MainActivity : AppCompatActivity(), FeedContract.View {
     }
 
     private fun setUpFeed() {
-        adapter = FeedAdapter {
-            presenter.autoLoad()
-        }
+        adapter = FeedAdapter { presenter.autoLoad() }
         feed.addItemDecoration(FeedItemDecoration(resources.getDimensionPixelOffset(R.dimen.spaceM)))
         feed.adapter = adapter
 
@@ -70,7 +71,6 @@ class MainActivity : AppCompatActivity(), FeedContract.View {
             presenter.loadFromScratch()
         }
         errorRefreshButton.setOnClickListener {
-            refreshContainer.isRefreshing = true
             presenter.loadFromScratch()
         }
     }
@@ -79,14 +79,8 @@ class MainActivity : AppCompatActivity(), FeedContract.View {
         presenter = FeedPresenter(
             view = this,
             repository = SortingPaginationRepository(
-                repository = ApiFeedRepository { hasInternetConnection(this) },
-                sortingComparator = Comparator { o1, o2 ->
-                    return@Comparator if (o1.id == o2.id) {
-                        0
-                    } else {
-                        o2.date.compareTo(o1.date) // reversed comparison
-                    }
-                },
+                repository = ApiFeedRepository(HttpClient(Android)) { hasInternetConnection(this) },
+                sortingComparator = getSortByDataComparator(),
                 formatFailureItem = { formatFailureItem<FeedCardViewModel>(this, it) },
                 formatFailureFullScreen = { formatFailureFullScreen(this, it) },
                 formatFeedItem = { formatFeedItem(this, it) }

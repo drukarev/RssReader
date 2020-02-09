@@ -16,6 +16,7 @@ import java.lang.Exception
 private const val TAG = "Page Repository"
 
 class ApiFeedRepository(
+    private val httpClient: HttpClient,
     private val hasInternetConnection: () -> Boolean
 ) : PageRepository<FeedItem> {
 
@@ -40,12 +41,10 @@ class ApiFeedRepository(
 
         Log.d(TAG, "Loading page $currentPage")
 
-        val client = HttpClient(Android)
-
         val deferredFeeds = feeds.map { url ->
             GlobalScope.async(Dispatchers.IO) {
                 try {
-                    val response = client.get<InputStream>("$url$currentPage")
+                    val response = httpClient.get<InputStream>("$url$currentPage")
                     when (val parsedResponse = parseAsRss(response)) {
                         is Response.Result -> return@async parsedResponse.value
                         is Response.Fail -> {

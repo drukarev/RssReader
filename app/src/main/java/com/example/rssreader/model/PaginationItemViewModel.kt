@@ -2,6 +2,7 @@ package com.example.rssreader.model
 
 /**
  * View representation of one item in the list. Can be data, error or progress.
+ * One of the error or progress items can appear at the end of the list.
  */
 sealed class PaginationItemViewModel<T> {
 

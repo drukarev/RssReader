@@ -57,7 +57,8 @@ class RssParsingTest(
                                 title = "TestItemTitle",
                                 author = "TestAuthor",
                                 date = OffsetDateTime.of(2009, 9, 6, 12, 0, 0, 0, ZoneOffset.UTC),
-                                sourceFeedName = "TestChannelTitle"
+                                sourceFeedName = "TestChannelTitle",
+                                page = 1
                             )
                         )
                     )
@@ -65,7 +66,7 @@ class RssParsingTest(
                 arrayOf(
                     """<rss version="2.0">
                         <channel>
-                         <title>TestChannelTitle</title>
+                         <title>TestChannelTitle Page - 100</title>
                          <description>TestDescription</description>
                          <item>
                           <title>TestItemTitle1</title>
@@ -93,21 +94,24 @@ class RssParsingTest(
                                 title = "TestItemTitle1",
                                 author = "TestAuthor1",
                                 date = OffsetDateTime.of(2009, 9, 6, 12, 0, 0, 0, ZoneOffset.UTC),
-                                sourceFeedName = "TestChannelTitle"
+                                sourceFeedName = "TestChannelTitle Page - 100",
+                                page = 100
                             ),
                             FeedItem(
                                 id = "TestId2",
                                 title = "TestItemTitle2",
                                 author = "TestAuthor2",
                                 date = OffsetDateTime.of(2009, 9, 6, 12, 0, 0, 0, ZoneOffset.UTC),
-                                sourceFeedName = "TestChannelTitle"
+                                sourceFeedName = "TestChannelTitle Page - 100",
+                                page = 100
                             ),
                             FeedItem(
                                 id = "TestId3",
                                 title = "TestItemTitle3",
                                 author = "TestAuthor3",
                                 date = OffsetDateTime.of(2009, 9, 6, 12, 0, 0, 0, ZoneOffset.UTC),
-                                sourceFeedName = "TestChannelTitle"
+                                sourceFeedName = "TestChannelTitle Page - 100",
+                                page = 100
                             )
                         )
                     )
